@@ -1,7 +1,7 @@
 import SimpleITK as sitk
 
 import pytest
-from amsaf import amsaf_func as af
+# import amsaf
 
 fixed_image = sitk.ReadImage("/srv/hart_mri/mri_data/SUBJECT_3/2-forearm/crops/sub3_forearm_cropped_for_ITK-SNAP_biascorr.nii")
 moving_image = sitk.ReadImage("/srv/hart_mri/mri_data/PQ_Full/crops/forearm/PQ_forearm_cropped_for_ITK-SNAP_biascorr.nii")
