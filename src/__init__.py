@@ -1,1 +1,0 @@
-from AmsafImageFilter import *
