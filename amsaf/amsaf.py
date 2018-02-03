@@ -14,9 +14,19 @@ Notes on implementation and runtime details:
 
     Depending on the size of the search space defined by the caller, it may take up
     to several days to complete the evaluation of all results returned by amsaf_eval
-    on a powerful 16-core server.
+    on a 16-core server.
     Referential transparency and laziness leave open the door to easy concurrency
     that might be necessary to allow for bigger search spaces and/or faster evaluation.
+
+Public Functions:
+    amsaf_eval,
+    read_image,
+    top_k,
+    write_top_k,
+    write_result,
+    register,
+    segment,
+    transform
 
 __authors__ = ["Ian McDonald", "Daniel Ho", "HART Lab"]
 __contact__ = "hartsegproject@gmail.com"
