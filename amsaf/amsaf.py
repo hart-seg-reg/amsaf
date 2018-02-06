@@ -40,7 +40,7 @@ import os
 import SimpleITK as sitk
 from sklearn.model_selection import ParameterGrid
 
-from amsaf.parameter_maps.default import default_vector
+from parameter_maps.default import default_vector
 
 ###########################
 # Public module functions #
@@ -225,7 +225,6 @@ def segment(unsegmented_image,
             parameter_maps=None,
             verbose=False):
     """Segment image using Elastix
-
     :param segmented_image: Image with corresponding segmentation passed as
                             the next argument
     :param segmentation: Segmentation to be mapped from segmented_image to
