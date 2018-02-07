@@ -11,30 +11,16 @@ allows for quicker development of Elastix parameter maps by generating and
 ranking the results of parameter map instances in a caller-defined search space.
 
 Notes on implementation and runtime details:
-    In the global scope, all functions in this module are referentially transparent
-    and, where appropriate, return lazy data structures.
-    Anyone modifying or adding to this module may want to preserve these properties.
-    Depending on the size of the search space defined by the caller, it may take up
-    to several days to complete the evaluation of all results returned by amsaf_eval
-    on a multi-core server.
-    Referential transparency and laziness leave open the door to easy concurrency
-    that might be necessary to allow for bigger search spaces and/or faster evaluation.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Public Functions:
-    amsaf_eval,
-    read_image,
-    top_k,
-    write_top_k,
-    write_result,
-    register,
-    segment,
-    transform
-
-__authors__ = ["Ian McDonald", "Daniel Ho", "HART Lab"]
-__contact__ = "hartsegproject@gmail.com"
-__copyright__ = "Copyright 2018, UC Berkeley Human-Assistive Robotic Technologies Lab"
-__license__ = "MIT"
-__maintainer__ = "Laura Hallock"
+* In the global scope, all functions in this module are referentially transparent
+  and, where appropriate, return lazy data structures.
+* Anyone modifying or adding to this module may want to preserve these properties.
+* Depending on the size of the search space defined by the caller, it may take up
+  to several days to complete the evaluation of all results returned by amsaf_eval
+  on a multi-core server.
+* Referential transparency and laziness leave open the door to easy concurrency
+  that might be necessary to allow for bigger search spaces and/or faster evaluation.
 """
 
 import os
