@@ -13,27 +13,32 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Click>=6.0',
+    'scipy',
     'scikit-learn',
-    'SimpleITK'
-    # TODO: put package requirements here
+    'numpy',
+    'SimpleITK',
 ]
 
 setup_requirements = [
     'pytest-runner',
+    'scipy',
     'scikit-learn',
-    'SimpleITK'
+    'numpy',
+    'SimpleITK',
     # TODO(hart-seg-reg): put setup requirements (distutils extensions, etc.) here
 ]
 
 test_requirements = [
     'pytest',
-    'SimpleITK'
-    # TODO: put package test requirements here
+    'scipy',
+    'scikit-learn',
+    'numpy',
+    'SimpleITK',
 ]
 
 setup(
     name='amsaf',
-    version='0.1.0',
+    version='0.1.1',
     description="The HART Lab's tools for registration-based segmentation",
     long_description=readme + '\n\n' + history,
     author="Laura Hallock",
