@@ -5,8 +5,8 @@
    :synopsis: A functional(ish) implementation of AMSAF
 
 AMSAF is comprised of several utility functions which wrap SimpleITK and Elastix
-in an effort to facilitate easy registration, transformation, and segmentation
-of .nii images. It's core functionality (see the docstring for amsaf_eval)
+to facilitate easy registration, transformation, and segmentation
+of .nii images. It's core functionality, amsaf_eval,
 allows for quicker development of Elastix parameter maps by generating and
 ranking the results of parameter map instances in a caller-defined search space.
 """
