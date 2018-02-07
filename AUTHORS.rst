@@ -10,4 +10,9 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Laura Hallock
+* Daniel Ho
+* Ian McDonald
+* Evan Shu
+* Thomas Li
+* Neal Sanghvi

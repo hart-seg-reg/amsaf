@@ -28,13 +28,13 @@ The HART Lab's tools for registration-based segmentation
 Features
 --------
 
-* TODO
+* Easy interface segmentation, registration, and parameter map tuning
+* A passionate team of university researchers <3
 
-Credits
----------
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+TODO
+----
 
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+* Good tests with Travis CI integration
+* Web frontend for common jobs?
 

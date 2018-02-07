@@ -11,12 +11,10 @@ ranking the results of parameter map instances in a caller-defined search space.
 Notes on implementation and runtime details:
     In the global scope, all functions in this module are referentially transparent
     and, where appropriate, return lazy data structures.
-
     Anyone modifying or adding to this module may want to preserve these properties.
-
     Depending on the size of the search space defined by the caller, it may take up
     to several days to complete the evaluation of all results returned by amsaf_eval
-    on a 16-core server.
+    on a multi-core server.
     Referential transparency and laziness leave open the door to easy concurrency
     that might be necessary to allow for bigger search spaces and/or faster evaluation.
 
@@ -43,6 +41,7 @@ import SimpleITK as sitk
 from sklearn.model_selection import ParameterGrid
 
 from amsaf.parameter_maps.default import default_vector
+
 
 ###########################
 # Public module functions #
@@ -115,6 +114,18 @@ def read_image(path):
     :rtype: SimpleITK.Image
     """
     return sitk.ReadImage(path)
+
+
+def write_image(image, path):
+    """Write an image to file
+
+    :param image: Image to be written
+    :param path: Destination where image will be written to
+    :type image: SimpleITK.Image
+    :type path: str
+    :rtype: None
+    """
+    sitk.WriteImage(image, path)
 
 
 def top_k(k, amsaf_results):
