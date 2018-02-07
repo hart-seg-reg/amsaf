@@ -13,10 +13,6 @@ amsaf
         :target: https://amsaf.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://pyup.io/repos/github/hart-seg-reg/amsaf/shield.svg
-     :target: https://pyup.io/repos/github/hart-seg-reg/amsaf/
-     :alt: Updates
-
 
 The HART Lab's tools for registration-based segmentation
 
