@@ -42,7 +42,7 @@ import os
 import SimpleITK as sitk
 from sklearn.model_selection import ParameterGrid
 
-from amsaf.parameter_maps.default import default_vector
+from parameter_maps.default import default_vector
 
 
 ###########################
