@@ -6,5 +6,4 @@ __author__ = """Laura Hallock"""
 __email__ = 'hartsegproject@gmail.com'
 __version__ = '0.1.0'
 
-import amsaf
-import parameter_maps
+from amsaf import *

@@ -17,6 +17,7 @@ requirements = [
     'scikit-learn',
     'numpy',
     'SimpleITK',
+    'click'
 ]
 
 setup_requirements = [
@@ -25,6 +26,7 @@ setup_requirements = [
     'scikit-learn',
     'numpy',
     'SimpleITK',
+    'click'
     # TODO(hart-seg-reg): put setup requirements (distutils extensions, etc.) here
 ]
 
@@ -34,6 +36,7 @@ test_requirements = [
     'scikit-learn',
     'numpy',
     'SimpleITK',
+    'click'
 ]
 
 setup(
