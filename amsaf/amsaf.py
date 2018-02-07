@@ -9,26 +9,12 @@ in an effort to facilitate easy registration, transformation, and segmentation
 of .nii images. It's core functionality (see the docstring for amsaf_eval)
 allows for quicker development of Elastix parameter maps by generating and
 ranking the results of parameter map instances in a caller-defined search space.
-
-Notes on implementation and runtime details:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* In the global scope, all functions in this module are referentially transparent
-  and, where appropriate, return lazy data structures.
-* Anyone modifying or adding to this module may want to preserve these properties.
-* Depending on the size of the search space defined by the caller, it may take up
-  to several days to complete the evaluation of all results returned by amsaf_eval
-  on a multi-core server.
-* Referential transparency and laziness leave open the door to easy concurrency
-  that might be necessary to allow for bigger search spaces and/or faster evaluation.
 """
 
 import os
 
 import SimpleITK as sitk
 from sklearn.model_selection import ParameterGrid
-
-from parameter_maps.default import default_vector
 
 
 ###########################
@@ -40,7 +26,7 @@ def amsaf_eval(unsegmented_image,
                ground_truth,
                segmented_image,
                segmentation,
-               parameter_priors=default_vector,
+               parameter_priors=None,
                verbose=False):
     """Main AMSAF functionality
 
@@ -86,6 +72,9 @@ def amsaf_eval(unsegmented_image,
     def param_combinations(option_dict, transform_type):
         return (_to_elastix(pm, transform_type)
                 for pm in ParameterGrid(option_dict))
+
+    if not parameter_priors:
+        parameter_priors = _get_default_vector()
 
     for rpm in param_combinations(parameter_priors[0], 'rigid'):
         for apm in param_combinations(parameter_priors[1], 'affine'):
@@ -314,3 +303,7 @@ def _pm_assoc(k, v, pm):
 
 def _pm_vec_assoc(k, v, pms):
     return [_pm_assoc(k, v, pm) for pm in pms]
+
+
+def _get_default_vector():
+    return default_vector
