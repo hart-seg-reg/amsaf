@@ -5,5 +5,5 @@ Modules
 amsaf
 -----
 
-.. automodule:: amsaf
+.. automodule:: amsaf.amsaf
    :members:
