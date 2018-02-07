@@ -1,4 +1,4 @@
-Welcome to amsaf's documentation!
+amsaf
 ======================================
 
 Contents:
