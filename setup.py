@@ -13,18 +13,21 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Click>=6.0',
+    'scikit-learn',
+    'SimpleITK'
     # TODO: put package requirements here
 ]
 
 setup_requirements = [
     'pytest-runner',
     'scikit-learn',
-    'numpy'
+    'SimpleITK'
     # TODO(hart-seg-reg): put setup requirements (distutils extensions, etc.) here
 ]
 
 test_requirements = [
     'pytest',
+    'SimpleITK'
     # TODO: put package test requirements here
 ]
 
