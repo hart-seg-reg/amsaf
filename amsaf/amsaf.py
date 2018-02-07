@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-"""A functional(ish) implementation of AMSAF
+"""
+.. module:: amsaf
+   :synopsis: A functional(ish) implementation of AMSAF
 
 AMSAF is comprised of several utility functions which wrap SimpleITK and Elastix
 in an effort to facilitate easy registration, transformation, and segmentation
