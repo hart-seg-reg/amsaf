@@ -1,6 +1,8 @@
 amsaf
 ======================================
 
+The HART Lab's tools for registration-based segmentation
+
 Contents:
 
 .. toctree::
