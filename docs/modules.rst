@@ -5,5 +5,5 @@ Modules
 amsaf
 -----
 
-.. automodule:: ../amsaf/amsaf.py
+.. automodule:: amsaf.amsaf.py
    :members:
