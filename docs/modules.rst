@@ -1,9 +1,7 @@
-=======
-Modules
-=======
-
 amsaf
------
+=====
 
-.. automodule:: amsaf.amsaf
-   :members:
+.. toctree::
+   :maxdepth: 4
+
+   amsaf
