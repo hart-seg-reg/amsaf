@@ -24,7 +24,7 @@ The HART Lab's tools for registration-based segmentation
 Features
 --------
 
-* Easy interface segmentation, registration, and parameter map tuning
+* Easy interface for segmentation, registration, and parameter map tuning
 * A passionate team of university researchers <3
 
 
