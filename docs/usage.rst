@@ -20,8 +20,8 @@ To use amsaf in a project::
     segmentation = ...
 
     # create a generator for amsaf result computations
-    amsaf_results = amsaf_eval(unsegmentd_image, ground_truth, segmented_image, segmented)
+    amsaf_results = amsaf.amsaf_eval(unsegmentd_image, ground_truth, segmented_image, segmented)
 
     # evaluate lazy computations, score them, and write them
-    write_top_k(10, amsaf_results, '~/amsaf_results')
+    amsaf.write_top_k(10, amsaf_results, '~/amsaf_results')
 
