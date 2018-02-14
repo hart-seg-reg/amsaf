@@ -11,16 +11,16 @@ Subpackages
 Submodules
 ----------
 
-amsaf\.amsaf module
--------------------
+amsaf.amsaf module
+------------------
 
 .. automodule:: amsaf.amsaf
     :members:
     :undoc-members:
     :show-inheritance:
 
-amsaf\.cli module
------------------
+amsaf.cli module
+----------------
 
 .. automodule:: amsaf.cli
     :members:
