@@ -305,5 +305,113 @@ def _pm_vec_assoc(k, v, pms):
     return [_pm_assoc(k, v, pm) for pm in pms]
 
 
+def _get_default_rigid():
+    return DEFAULT_RIGID
+
+
+def _get_default_affine():
+    return DEFAULT_AFFINE
+
+
+def _get_default_bspline():
+    return DEFAULT_BSPLINE
+
+
 def _get_default_vector():
-    return default_vector
+    return [_get_default_rigid(), _get_default_affine(), _get_default_bspline()]
+
+
+##########################
+# Default parameter maps #
+##########################
+
+# These should probably be moved to their own module if we add many more.
+# If you do this, be sure to change the above helper functions.
+
+DEFAULT_RIGID = {
+    "AutomaticParameterEstimation": ['true'],
+    "AutomaticTransformInitialization": ['true'],
+    "BSplineInterpolationOrder": ['3.000000'],
+    "CheckNumberOfSamples": ['true'],
+    "DefaultPixelValue": ['0.000000'],
+    "FinalBSplineInterpolationOrder": ['3.000000'],
+    "FixedImagePyramid": ['FixedSmoothingImagePyramid'],
+    "ImageSampler": ['RandomCoordinate'],
+    "Interpolator": ['BSplineInterpolator'],
+    "MaximumNumberOfIterations": ['1024.000000'],
+    "MaximumNumberOfSamplingAttempts": ['8.000000'],
+    "Metric": ['AdvancedMattesMutualInformation'],
+    "MovingImagePyramid": ['MovingSmoothingImagePyramid'],
+    "NewSamplesEveryIteration": ['true'],
+    "NumberOfHistogramBins": ['64.000000'],
+    "NumberOfResolutions": ['3.000000'],
+    "NumberOfSamplesForExactGradient": ['4096.000000'],
+    "NumberOfSpatialSamples": ['2000.000000'],
+    "Optimizer": ['AdaptiveStochasticGradientDescent'],
+    "Registration": ['MultiResolutionRegistration'],
+    "ResampleInterpolator": ['FinalBSplineInterpolator'],
+    "Resampler": ['DefaultResampler'],
+    "ResultImageFormat": ['nii'],
+    "Transform": ['EulerTransform'],
+    "WriteIterationInfo": ['false'],
+    "WriteResultImage": ['true'],
+}
+
+DEFAULT_AFFINE = {
+    "AutomaticParameterEstimation": ['true'],
+    "CheckNumberOfSamples": ['true'],
+    "DefaultPixelValue": ['0.000000'],
+    "FinalBSplineInterpolationOrder": ['3.000000'],
+    "FixedImagePyramid":
+        ['FixedSmoothingImagePyramid', 'FixedRecursiveImagePyramid'],
+    "ImageSampler": ['RandomCoordinate'],
+    "Interpolator": ['BSplineInterpolator'],
+    "MaximumNumberOfIterations": ['1024.000000'],
+    "MaximumNumberOfSamplingAttempts": ['8.000000'],
+    "Metric": ['AdvancedMattesMutualInformation'],
+    "MovingImagePyramid": ['MovingSmoothingImagePyramid'],
+    "NewSamplesEveryIteration": ['true'],
+    "NumberOfHistogramBins": ['32.000000'],
+    "NumberOfResolutions": ['4.000000'],
+    "NumberOfSamplesForExactGradient": ['4096.000000'],
+    "NumberOfSpatialSamples": ['2048.000000'],
+    "Optimizer": ['AdaptiveStochasticGradientDescent'],
+    "Registration": ['MultiResolutionRegistration'],
+    "ResampleInterpolator": ['FinalBSplineInterpolator'],
+    "Resampler": ['DefaultResampler'],
+    "ResultImageFormat": ['nii'],
+    "Transform": ['AffineTransform'],
+    "WriteIterationInfo": ['false'],
+    "WriteResultImage": ['true'],
+}
+
+DEFAULT_BSPLINE = {
+    'AutomaticParameterEstimation': ["true"],
+    'CheckNumberOfSamples': ["true"],
+    'DefaultPixelValue': ['0.000000'],
+    'FinalBSplineInterpolationOrder': ['3.000000'],
+    'FinalGridSpacingInPhysicalUnits': ['4.000000', '6.000000'],
+    'FixedImagePyramid': ['FixedSmoothingImagePyramid'],
+    'ImageSampler': ['RandomCoordinate'],
+    'Interpolator': ['LinearInterpolator'],
+    'MaximumNumberOfIterations': ['1024.000000'],
+    'MaximumNumberOfSamplingAttempts': ['8.000000'],
+    'Metric':
+        ['AdvancedMattesMutualInformation', 'TransformBendingEnergyPenalty'],
+    'Metric0Weight': ['0', '0.5', '1.000000', '2.0'],
+    'Metric1Weight': ['1.000000'],
+    'MovingImagePyramid': ["MovingSmoothingImagePyramid"],
+    'NewSamplesEveryIteration': ['true'],
+    'NumberOfHistogramBins': ['32.000000'],
+    'NumberOfResolutions': ['4.000000'],
+    'NumberOfSamplesForExactGradient': ['4096.000000'],
+    'NumberOfSpatialSamples': ['2048.000000'],
+    'Optimizer': ['AdaptiveStochasticGradientDescent'],
+    'Registration': ['MultiMetricMultiResolutionRegistration'],
+    'ResampleInterpolator': ['FinalBSplineInterpolator'],
+    'Resampler': ['DefaultResampler'],
+    'ResultImageFormat': ['nii'],
+    'Transform': ['BSplineTransform'],
+    'WriteIterationInfo': ['false'],
+    'WriteResultImage': ['true']
+}
