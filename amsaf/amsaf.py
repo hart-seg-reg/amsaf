@@ -55,7 +55,7 @@ def amsaf_eval(unsegmented_image,
     :type parameter_priors: dict
     :type verbose: bool
     :returns: A lazy stream of result
-              (parameter map, result segmentation, segmentation score) lists.
+              (parameter map vector, result segmentation, segmentation score) lists.
     :rtype: generator
     """
 
@@ -82,42 +82,6 @@ def amsaf_eval(unsegmented_image,
                 yield eval_pm([rpm, apm, bpm])
 
 
-def read_image(path):
-    """Load image from filepath as SimpleITK.Image
-
-    :param path: Path to .nii file containing image.
-    :type path: str
-    :returns: Image object from path
-    :rtype: SimpleITK.Image
-    """
-    return sitk.ReadImage(path)
-
-
-def write_image(image, path):
-    """Write an image to file
-
-    :param image: Image to be written
-    :param path: Destination where image will be written to
-    :type image: SimpleITK.Image
-    :type path: str
-    :rtype: None
-    """
-    sitk.WriteImage(image, path)
-
-
-def top_k(k, amsaf_results):
-    """Get top k results of amsaf_eval
-
-    :param k: Number of results to return
-    :param amsaf_results: Results in the format of amsaf_eval return value
-    :type k: int
-    :type amsaf_result: [[SimpleITK.ParameterMap, SimpleITK.Image, float]]
-    :returns: Top k result groups ordered by score
-    :rtype: [[SimpleITK.ParameterMap, SimpleITK.Image, float]]
-    """
-    return sorted(amsaf_results, key=lambda x: x[-1], reverse=True)[:k]
-
-
 def write_top_k(k, amsaf_results, path):
     """Write top k results to filepath
 
@@ -137,31 +101,6 @@ def write_top_k(k, amsaf_results, path):
         os.makedirs(path)
     for i, result in enumerate(top_k(k, amsaf_results)):
         write_result(result, os.path.join(path, 'result-{}'.format(i)))
-
-
-def write_result(amsaf_result, path):
-    """Write single amsaf_eval result to path
-
-    Writes parameter maps, segmentation, and score of AMSAF result as individual
-    files at path.
-
-    :param amsaf_results: Results in the format of amsaf_eval return value
-    :param path: Filepath to write results at
-    :type amsaf_result: [SimpleITK.ParameterMap, SimpleITK.Image, float]
-    :type path: str
-    :rtype: None
-    """
-    if not os.path.isdir(path):
-        os.makedirs(path)
-    for i, pf in enumerate(amsaf_result[0]):
-        sitk.WriteParameterFile(pf,
-                                os.path.join(
-                                    path, 'parameter-file-{}.txt'.format(i)))
-
-    sitk.WriteImage(amsaf_result[1], os.path.join(path, 'seg.nii'))
-
-    with open(os.path.join(path, 'score.txt'), 'w') as f:
-        f.write(str(amsaf_result[2]))
 
 
 def register(fixed_image,
@@ -259,6 +198,67 @@ def transform(image, parameter_maps, verbose=False):
     result_image = transform_filter.GetResultImage()
 
     return result_image
+
+
+def read_image(path):
+    """Load image from filepath as SimpleITK.Image
+
+    :param path: Path to .nii file containing image.
+    :type path: str
+    :returns: Image object from path
+    :rtype: SimpleITK.Image
+    """
+    return sitk.ReadImage(path)
+
+
+def write_image(image, path):
+    """Write an image to file
+
+    :param image: Image to be written
+    :param path: Destination where image will be written to
+    :type image: SimpleITK.Image
+    :type path: str
+    :rtype: None
+    """
+    sitk.WriteImage(image, path)
+
+
+def write_result(amsaf_result, path):
+    """Write single amsaf_eval result to path
+
+    Writes parameter maps, segmentation, and score of AMSAF result as individual
+    files at path.
+
+    :param amsaf_results: Results in the format of amsaf_eval return value
+    :param path: Filepath to write results at
+    :type amsaf_result: [SimpleITK.ParameterMap, SimpleITK.Image, float]
+    :type path: str
+    :rtype: None
+    """
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    for i, pf in enumerate(amsaf_result[0]):
+        sitk.WriteParameterFile(pf,
+                                os.path.join(
+                                    path, 'parameter-file-{}.txt'.format(i)))
+
+    sitk.WriteImage(amsaf_result[1], os.path.join(path, 'seg.nii'))
+
+    with open(os.path.join(path, 'score.txt'), 'w') as f:
+        f.write('{}\n'.format(amsaf_result[2]))
+
+
+def top_k(k, amsaf_results):
+    """Get top k results of amsaf_eval
+
+    :param k: Number of results to return
+    :param amsaf_results: Results in the format of amsaf_eval return value
+    :type k: int
+    :type amsaf_result: [[SimpleITK.ParameterMap, SimpleITK.Image, float]]
+    :returns: Top k result groups ordered by score
+    :rtype: [[SimpleITK.ParameterMap, SimpleITK.Image, float]]
+    """
+    return sorted(amsaf_results, key=lambda x: x[-1], reverse=True)[:k]
 
 
 ##########################
