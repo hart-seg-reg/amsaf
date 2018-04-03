@@ -20,10 +20,6 @@ axis_of_slicing: Determines which plane slices align with (xy,yz,xz), Takes inpu
 	1 returns slices along y axis (slices of the form [400,y,200])
 	2 returns slices along z axis (slices of the form [400,300,z])
 
-
-
-
-
 example: 
 python ExtractSlice.py /data/trial11_30_w2_seg_TRANS.nii 9 /data/try.nii 0 /data/trial11_30_w2_testseg_TRANS.nii 
 : input segmentation path
@@ -35,13 +31,7 @@ python ExtractSlice.py /data/trial11_30_w2_seg_TRANS.nii 9 /data/try.nii 0 /data
     if this parameter is 2, each slices will be [400, 300, 1]
 """
 
-"""
-How to Use Pt2:
-example python ExtractSlice.py 
 
-
-
-"""
 if len ( sys.argv ) != 5:
     print("Usage: %s inputImage sliceNumber outputImage dimension" % (sys.argv[0]))
     sys.exit(1)
