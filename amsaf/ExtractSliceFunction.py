@@ -3,6 +3,9 @@ import sys
 import os
 
 """
+Modified code from itk example ExtractSlice.py:
+https://itk.org/gitweb?p=SimpleITK.git;a=blob;f=Examples/Python/ExtractSlice.py;h=51b793ab4d4030ad152ffea7bc8dce0f406a5567;hb=HEAD
+
 How to Use:
 
 python ExtractSliceFunction.py input_file number_of_slices output_file axis_of_slicing
