@@ -200,15 +200,19 @@ def transform(image, parameter_maps, verbose=False):
     return result_image
 
 
-def read_image(path):
+def read_image(path, ultrasound_slice=False):
     """Load image from filepath as SimpleITK.Image
 
     :param path: Path to .nii file containing image.
+    :param ultrasound_slice: Optional. If True, image will be cast as sitkUInt16 for ultrasound images.
     :type path: str
     :returns: Image object from path
     :rtype: SimpleITK.Image
     """
-    return sitk.ReadImage(path)
+    image = sitk.ReadImage(path)
+    if ultrasound_slice:
+        image = sitk.Cast(image, sitk.sitkUInt16)
+    return image
 
 
 def write_image(image, path):
