@@ -273,7 +273,10 @@ def top_k(k, amsaf_results):
 def _to_elastix(pm, ttype):
     elastix_pm = sitk.GetDefaultParameterMap(ttype)
     for k, v in pm.iteritems():
-        elastix_pm[k] = [v]
+        if type(v) == list:
+            elastix_pm[k] = v
+        else:
+            elastix_pm[k] = [v]
     return elastix_pm
 
 
@@ -401,7 +404,7 @@ DEFAULT_BSPLINE = {
     'MaximumNumberOfIterations': ['1024.000000'],
     'MaximumNumberOfSamplingAttempts': ['8.000000'],
     'Metric':
-        ['AdvancedMattesMutualInformation', 'TransformBendingEnergyPenalty'],
+        [['AdvancedMattesMutualInformation', 'TransformBendingEnergyPenalty']],
     'Metric0Weight': ['0', '0.5', '1.000000', '2.0'],
     'Metric1Weight': ['1.000000'],
     'MovingImagePyramid': ["MovingSmoothingImagePyramid"],
