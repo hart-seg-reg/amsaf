@@ -285,11 +285,9 @@ def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, fi
     >>> us_data = os.path.join(os.path.sep, 'srv', 'ultrasound_data')
     >>> sub1 = os.path.join(us_data, 'sub1')
     >>> sub2 = os.path.join(us_data, 'sub2')
-
     >>> sub1_trials = os.path.join(sub1, 'trials')
     >>> sub2_trials = os.path.join(sub2, 'trials')
     >>> sub1_seg = os.path.join(sub1, seg)
-
     >>> sub2_hand_shoulder_seg = seg_map(sub1_trials, sub2_trials, sub1_seg, ['trial18_90_fs_volume.mha'])
     """
     result_segs = []
@@ -325,6 +323,14 @@ def seg_map_all(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir
                    supplied directory.
 
     :rtype: [SimpleITK.Image]
+
+    >>> us_data = os.path.join(os.path.sep, 'srv', 'ultrasound_data')
+    >>> sub1 = os.path.join(us_data, 'sub1')
+    >>> sub2 = os.path.join(us_data, 'sub2')
+    >>> sub1_trials = os.path.join(sub1, 'trials')
+    >>> sub2_trials = os.path.join(sub2, 'trials')
+    >>> sub1_seg = os.path.join(sub1, seg)
+    >>> sub2_segs = seg_map_all(sub1_trials, sub2_trials, sub1_seg)
     """
     sub1_images = _image_set(segmented_subject_dir, image_type=image_type)
     sub2_images = _image_set(unsegmented_subject_dir, image_type=image_type)
