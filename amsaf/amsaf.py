@@ -12,6 +12,7 @@ ranking the results of parameter map instances in a caller-defined search space.
 """
 
 import os
+import glob
 
 import SimpleITK as sitk
 from sklearn.model_selection import ParameterGrid
@@ -265,9 +266,66 @@ def top_k(k, amsaf_results):
     return sorted(amsaf_results, key=lambda x: x[-1], reverse=True)[:k]
 
 
+def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, filenames, strict=False):
+    """Intra-subject segmentation mappings
+
+    :param segmented_subject_dir: Directory with data of segmented image
+    :param unsegmented_subject_dir: Directory with data of unsegmented_image
+    :param segmentation_dir: Directory with data of segmented image segmentation
+    :param filenames: Iterable of filenames to map
+    :param strict: Default False. If True, a ValueError will be raised when some filename is not present in every
+                   supplied directory.
+
+    :rtype: [SimpleITK.Image]
+
+    >>> us_data = os.path.join(os.path.sep, 'srv', 'ultrasound_data')
+    >>> sub1 = os.path.join(us_data, 'sub1')
+    >>> sub2 = os.path.join(us_data, 'sub2')
+
+    >>> sub1_trials = os.path.join(sub1, 'trials')
+    >>> sub2_trials = os.path.join(sub2, 'trials')
+    >>> sub1_seg = os.path.join(sub1, seg)
+
+    >>> sub2_seg = seg_map(sub1_trials, sub2_trials, sub1_seg, all=True, suppress_warnings=True)
+    >>> sub2_hand_shoulder_seg = seg_map(sub1_trials, sub2_trials, sub1_seg, images=['trial18_90_fs_volume.mha'])
+    """
+    result_segs = []
+    for f in filenames:
+        unsegmented_image = os.path.join(unsegmented_subject_dir, f)
+        segmented_image = os.path.join(segmented_subject_dir, f)
+        segmentation = os.path.join(segmentation_dir, f)
+
+        if not all([os.path.isfile(image) for image in [unsegmented_image, segmented_image, segmentation]]):
+            if strict:
+                raise ValueError("File {} is not in all supplied directories".format(f))
+            continue
+
+        result_segs.append(segment(unsegmented_image, segmented_image, segmentation))
+
+    return result_segs
+
+
+def seg_map_all(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, image_type='volume', strict=False):
+    sub1_images = _image_set(segmented_subject_dir, image_type=image_type)
+    sub2_images = _image_set(unsegmented_subject_dir, image_type=image_type)
+
+    matches = sub1_images.intersection(sub2_images)
+    return seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, matches, strict=strict)
+
+
 ##########################
 # Private module helpers #
 ##########################
+
+def _image_set(dirname, image_type='volume'):
+    if image_type == 'volume':
+        ext = '.mha'
+    elif image_type == 'slice':
+        ext = '.nii'
+    else:
+        raise ValueError("kwarg image_type must be either 'volume' or 'slice'")
+    images = glob.glob(os.path.join(dirname, '*{}'.format(ext)))
+    return set(os.path.basename(image) for image in images)
 
 
 def _to_elastix(pm, ttype):
