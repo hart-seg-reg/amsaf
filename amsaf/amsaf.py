@@ -266,13 +266,17 @@ def top_k(k, amsaf_results):
     return sorted(amsaf_results, key=lambda x: x[-1], reverse=True)[:k]
 
 
-def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, filenames, strict=False):
+def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, filenames, parameter_maps=None,
+            strict=False):
     """Intra-subject segmentation mappings
 
     :param segmented_subject_dir: Directory with data of segmented image
     :param unsegmented_subject_dir: Directory with data of unsegmented_image
     :param segmentation_dir: Directory with data of segmented image segmentation
     :param filenames: Iterable of filenames to map
+    :param parameter_maps: Optional vector of 3 parameter maps to be used for
+                           registration. If none are provided, a default vector
+                           of [rigid, affine, bspline] parameter maps is used.
     :param strict: Default False. If True, a ValueError will be raised when some filename is not present in every
                    supplied directory.
 
@@ -300,17 +304,19 @@ def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, fi
                 raise ValueError("File {} is not in all supplied directories".format(f))
             continue
 
-        result_segs.append(segment(unsegmented_image, segmented_image, segmentation))
+        result_segs.append(segment(unsegmented_image, segmented_image, segmentation, parameter_maps=parameter_maps))
 
     return result_segs
 
 
-def seg_map_all(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, image_type='volume', strict=False):
+def seg_map_all(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, image_type='volume',
+                parameter_maps=None, strict=False):
     sub1_images = _image_set(segmented_subject_dir, image_type=image_type)
     sub2_images = _image_set(unsegmented_subject_dir, image_type=image_type)
 
     matches = sub1_images.intersection(sub2_images)
-    return seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, matches, strict=strict)
+    return seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, matches,
+                   parameter_maps=parameter_maps, strict=strict)
 
 
 ##########################
