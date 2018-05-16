@@ -268,7 +268,7 @@ def top_k(k, amsaf_results):
 
 def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, filenames, parameter_maps=None,
             strict=False):
-    """Intra-subject segmentation mappings
+    """Intra-subject segmentation mappings from supplied filenames
 
     :param segmented_subject_dir: Directory with data of segmented image
     :param unsegmented_subject_dir: Directory with data of unsegmented_image
@@ -290,8 +290,7 @@ def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, fi
     >>> sub2_trials = os.path.join(sub2, 'trials')
     >>> sub1_seg = os.path.join(sub1, seg)
 
-    >>> sub2_seg = seg_map(sub1_trials, sub2_trials, sub1_seg, all=True, suppress_warnings=True)
-    >>> sub2_hand_shoulder_seg = seg_map(sub1_trials, sub2_trials, sub1_seg, images=['trial18_90_fs_volume.mha'])
+    >>> sub2_hand_shoulder_seg = seg_map(sub1_trials, sub2_trials, sub1_seg, ['trial18_90_fs_volume.mha'])
     """
     result_segs = []
     for f in filenames:
@@ -309,8 +308,24 @@ def seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, fi
     return result_segs
 
 
-def seg_map_all(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, image_type='volume',
-                parameter_maps=None, strict=False):
+def seg_map_all(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir,
+                parameter_maps=None, image_type='volume', strict=False):
+    """Intra-subject segmentation mappings
+
+    Like seg_map, but selects all files of image_type in supplied directories as filename selection.
+
+    :param segmented_subject_dir: Directory with data of segmented image
+    :param unsegmented_subject_dir: Directory with data of unsegmented_image
+    :param segmentation_dir: Directory with data of segmented image segmentation
+    :param parameter_maps: Optional vector of 3 parameter maps to be used for
+                           registration. If none are provided, a default vector
+                           of [rigid, affine, bspline] parameter maps is used.
+    :param image_type: Either 'volume' or 'slice' corresponding to extensions '.mha' or '.nii', respectively
+    :param strict: Default False. If True, a ValueError will be raised when some filename is not present in every
+                   supplied directory.
+
+    :rtype: [SimpleITK.Image]
+    """
     sub1_images = _image_set(segmented_subject_dir, image_type=image_type)
     sub2_images = _image_set(unsegmented_subject_dir, image_type=image_type)
 
