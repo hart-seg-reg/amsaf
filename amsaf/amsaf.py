@@ -60,6 +60,7 @@ def amsaf_eval(unsegmented_image,
     :rtype: generator
     """
 
+    dynamic_opt = False
     def eval_pm(parameter_map):
         seg = segment(
             unsegmented_image,
@@ -77,10 +78,25 @@ def amsaf_eval(unsegmented_image,
     if not parameter_priors:
         parameter_priors = _get_default_vector()
 
-    for rpm in param_combinations(parameter_priors[0], 'rigid'):
-        for apm in param_combinations(parameter_priors[1], 'affine'):
-            for bpm in param_combinations(parameter_priors[2], 'bspline'):
-                yield eval_pm([rpm, apm, bpm])
+    if dynamic_opt:
+        for rpm in param_combinations(parameter_priors[0], 'rigid'):
+            translation_image, translation_pm =
+                 register_indv(unsegmented_image, segmented_image, 'translation', rpm, verbose=verbose)
+            for apm in param_combinations(parameter_priors[1], 'affine'):
+                affine_image, affine_pm = 
+                        register_indv(translation_image, segmented_image, 'affine', apm, verbose=verbose)
+                for bpm in param_combinations(parameter_priors[2], 'bspline'):
+                    bspline_image, bspline_pm = register_indv(bspline_image, segmented_image, bpm, 'bspline', verbose=verbose)
+
+                    #Need to transform here? Difference between resulting image and transform output
+                    score = _sim_score(bspline_image, ground_truth)
+                    yield [ [rpm, apm, bpm] , bspline_image, score]
+
+    else:
+        for rpm in param_combinations(parameter_priors[0], 'rigid'):
+            for apm in param_combinations(parameter_priors[1], 'affine'):
+                for bpm in param_combinations(parameter_priors[2], 'bspline'):
+                    yield eval_pm([rpm, apm, bpm])
 
 
 def write_top_k(k, amsaf_results, path):
@@ -148,6 +164,49 @@ def register(fixed_image,
 
     return result_image, transform_parameter_maps
 
+def register_indv(fixed_image,
+             moving_image,
+             transform_type,
+             parameter_map=None,
+             auto_init=True,
+             verbose=False):
+    """Register images using Elastix.
+
+    :param transform_type:
+    :param parameter_maps: Optional vector of 3 parameter maps to be used for
+                           registration. If none are provided, a default vector
+                           of [rigid, affine, bspline] parameter maps is used.
+    :param auto_init: Auto-initialize images. This helps with flexibility when
+                      using images with little overlap.
+    :param verbose: Flag to toggle stdout printing from Elastix
+    :type fixed_image: SimpleITK.Image
+    :type moving_image: SimpleITK.Image
+    :type parameter_maps: [SimpleITK.ParameterMap]
+    :type auto_init: bool
+    :type verbose: bool
+    :returns: Tuple of (result_image, transform_parameter_maps)
+    :rtype: (SimpleITK.Image, [SimpleITK.ParameterMap])
+    """
+    registration_filter = sitk.ElastixImageFilter()
+    if not verbose:
+        registration_filter.LogToConsoleOff()
+    registration_filter.SetFixedImage(fixed_image)
+    registration_filter.SetMovingImage(moving_image)
+
+    if not parameter_map:
+        parameter_map = sitk.GetDefaultParameterMap(transform_type)
+        
+    if auto_init: #Make sure still works later
+        parameter_map = _auto_init_assoc(parameter_maps)
+    registration_filter.SetParameterMap(parameter_map)
+
+    registration_filter.Execute()
+    result_image = registration_filter.GetResultImage()
+    transform_parameter_maps = registration_filter.GetTransformParameterMap()
+
+    return result_image, transform_parameter_map
+
+
 
 def segment(unsegmented_image,
             segmented_image,
@@ -177,6 +236,7 @@ def segment(unsegmented_image,
 
     return transform(
         segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
+
 
 
 def transform(image, parameter_maps, verbose=False):
