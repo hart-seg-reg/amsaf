@@ -28,7 +28,8 @@ def amsaf_eval(unsegmented_image,
                segmented_image,
                segmentation,
                parameter_priors=None,
-               verbose=False):
+               verbose=False, 
+               memoize=False):
     """Main AMSAF functionality
 
     Generate and score new segmentations and corresponding Elastix parameter
@@ -49,18 +50,19 @@ def amsaf_eval(unsegmented_image,
                              consideration.
     :param verbose: Optional boolean flag to toggle verbose stdout printing from
                     Elastix.
+    :param memoize: Optional boolean flag to toggle memoization optimization
     :type unsegmented_image: SimpleITK.Image
     :type ground_truth: SimpleITK.Image
     :type segmented_image: SimpleITK.Image
     :type segmentation: SimpleITK.Image
     :type parameter_priors: dict
     :type verbose: bool
+    :type memoize: bool
     :returns: A lazy stream of result
               (parameter map vector, result segmentation, segmentation score) lists.
     :rtype: generator
     """
 
-    dynamic_opt = False
     def eval_pm(parameter_map):
         seg = segment(
             unsegmented_image,
@@ -78,19 +80,19 @@ def amsaf_eval(unsegmented_image,
     if not parameter_priors:
         parameter_priors = _get_default_vector()
 
-    if dynamic_opt:
+    if memoize:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
-            translation_image, translation_pm =
-                 register_indv(unsegmented_image, segmented_image, 'translation', rpm, verbose=verbose)
+            translation_image, translation_pm = register_indv(unsegmented_image, segmented_image, 'translation', rpm, verbose=verbose)
             for apm in param_combinations(parameter_priors[1], 'affine'):
-                affine_image, affine_pm = 
-                        register_indv(translation_image, segmented_image, 'affine', apm, verbose=verbose)
+                #Need to transform with each image, or only at end?
+                affine_image, affine_pm = register_indv(translation_image, segmented_image, 'affine', apm, verbose=verbose)
                 for bpm in param_combinations(parameter_priors[2], 'bspline'):
                     bspline_image, bspline_pm = register_indv(bspline_image, segmented_image, bpm, 'bspline', verbose=verbose)
-
                     #Need to transform here? Difference between resulting image and transform output
+                    transform_parameter_maps = [rpm, apm, bpm]
+                    transformed_image = transform(segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
                     score = _sim_score(bspline_image, ground_truth)
-                    yield [ [rpm, apm, bpm] , bspline_image, score]
+                    yield [ transform_parameter_maps , transformed_image, score]
 
     else:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
@@ -172,16 +174,16 @@ def register_indv(fixed_image,
              verbose=False):
     """Register images using Elastix.
 
-    :param transform_type:
-    :param parameter_maps: Optional vector of 3 parameter maps to be used for
-                           registration. If none are provided, a default vector
-                           of [rigid, affine, bspline] parameter maps is used.
+    :param transform_type: Type of tranform to be performed
+    :type transform_type: String
+    :param parameter_map: Optional parameter map to be used for
+                           registration. If none is provided, a default map based on transform type is used.
     :param auto_init: Auto-initialize images. This helps with flexibility when
                       using images with little overlap.
     :param verbose: Flag to toggle stdout printing from Elastix
     :type fixed_image: SimpleITK.Image
     :type moving_image: SimpleITK.Image
-    :type parameter_maps: [SimpleITK.ParameterMap]
+    :type parameter_map: SimpleITK.ParameterMap
     :type auto_init: bool
     :type verbose: bool
     :returns: Tuple of (result_image, transform_parameter_maps)
