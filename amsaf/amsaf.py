@@ -90,7 +90,7 @@ def amsaf_eval(unsegmented_image,
                     bspline_image, bspline_pm = register_indv(bspline_image, segmented_image, bpm, 'bspline', verbose=verbose)
                     #Need to transform here? Difference between resulting image and transform output
                     transform_parameter_maps = [rpm, apm, bpm]
-                    transformed_image = transform(segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
+                    #transformed_image = transform(segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
                     score = _sim_score(bspline_image, ground_truth)
                     yield [ transform_parameter_maps , transformed_image, score]
 
