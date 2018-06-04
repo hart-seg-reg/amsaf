@@ -24,7 +24,7 @@ data = img.get_data()
 def prototype_cropper(nifti_file, x_dim):
 	#array is a 3 dim array
 	numpy_array_data = nifti_file.get_data()
-	numpy_array_data[x_dim+1, len(numpy_array_data), :, :] = 0
+	numpy_array_data[x_dim+1:, :, :] = 0
 	return nib.Nifti1Image(numpy_array_data,nifti_file.affine)
 
 def cropper_no_zero_padding(
