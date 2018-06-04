@@ -39,9 +39,10 @@ def cropper_with_zero_padding(
 	z_dim_start, z_dim_end):
 	numpy_array_data = nifti_file.get_data()
 	new_array_data = np.zeros(numpy_array_data.shape)
-	new_array_data[x_dim_start:x_dim_end, y_dim_start:y_dim_end, z_dim_start:z_dim_end] 
-			= numpy_array_data[x_dim_start:x_dim_end, y_dim_start:y_dim_end, z_dim_start:z_dim_end]
+	new_array_data[x_dim_start:x_dim_end, y_dim_start:y_dim_end, z_dim_start:z_dim_end] \
+		= numpy_array_data[x_dim_start:x_dim_end, y_dim_start:y_dim_end,z_dim_start:z_dim_end]
 	return nib.Nifti1Image(new_array_data,nifti_file.affine)
+
 
 
 def main():
@@ -53,6 +54,7 @@ def main():
 	z_dim_start = int(sys.argv[6])
 	z_dim_end = int(sys.argv[7]) - 1
 	output_file = sys.argv[8]
+
 	
 	nib.save(cropper_no_zero_padding(nifti_file, x_dim_start, x_dim_end, 
 	y_dim_start, y_dim_end, 
