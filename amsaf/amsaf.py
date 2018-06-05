@@ -84,15 +84,13 @@ def amsaf_eval(unsegmented_image,
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
             translation_image, translation_pm = register_indv(unsegmented_image, segmented_image, 'translation', rpm, verbose=verbose)
             for apm in param_combinations(parameter_priors[1], 'affine'):
-                #Need to transform with each image, or only at end?
                 affine_image, affine_pm = register_indv(translation_image, segmented_image, 'affine', apm, verbose=verbose)
                 for bpm in param_combinations(parameter_priors[2], 'bspline'):
                     bspline_image, bspline_pm = register_indv(bspline_image, segmented_image, bpm, 'bspline', verbose=verbose)
-                    #Need to transform here? Difference between resulting image and transform output
                     transform_parameter_maps = [rpm, apm, bpm]
-                    #transformed_image = transform(segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
+                    transformed_seg = transform(segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
                     score = _sim_score(bspline_image, ground_truth)
-                    yield [ transform_parameter_maps , transformed_image, score]
+                    yield [ transform_parameter_maps , transformed_seg, score]
 
     else:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
@@ -172,7 +170,8 @@ def register_indv(fixed_image,
              parameter_map=None,
              auto_init=True,
              verbose=False):
-    """Register images using Elastix.
+    """Register images using Elastix. Used to perform transforms individually
+        Namely used for memoization to avoid redundant computation
 
     :param transform_type: Type of tranform to be performed
     :type transform_type: String
