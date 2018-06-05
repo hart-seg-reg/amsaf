@@ -70,7 +70,10 @@ def amsaf_eval(unsegmented_image,
             segmentation,
             parameter_map,
             verbose=verbose)
-        score = _sim_score(seg, ground_truth)
+        if ground_truth is not None:
+            score = _sim_score(seg, ground_truth)
+        else: 
+            score = 0
         return [parameter_map, seg, score]
 
     def param_combinations(option_dict, transform_type):
@@ -89,7 +92,10 @@ def amsaf_eval(unsegmented_image,
                     bspline_image, bspline_pm = register_indv(bspline_image, segmented_image, bpm, 'bspline', verbose=verbose)
                     transform_parameter_maps = [rpm, apm, bpm]
                     transformed_seg = transform(segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
-                    score = _sim_score(bspline_image, ground_truth)
+                    if ground_truth is not None:
+                        score = _sim_score(bspline_image, ground_truth)
+                    else:
+                        score = 0
                     yield [ transform_parameter_maps , transformed_seg, score]
 
     else:
@@ -317,13 +323,15 @@ def write_result(amsaf_result, path):
 def top_k(k, amsaf_results):
     """Get top k results of amsaf_eval
 
-    :param k: Number of results to return
+    :param k: Number of results to return. If k == 0, returns all results
     :param amsaf_results: Results in the format of amsaf_eval return value
     :type k: int
     :type amsaf_result: [[SimpleITK.ParameterMap, SimpleITK.Image, float]]
     :returns: Top k result groups ordered by score
     :rtype: [[SimpleITK.ParameterMap, SimpleITK.Image, float]]
     """
+    if k == 0:
+        sorted(amsaf_results, key=lambda x: x[-1], reverse=True)
     return sorted(amsaf_results, key=lambda x: x[-1], reverse=True)[:k]
 
 
