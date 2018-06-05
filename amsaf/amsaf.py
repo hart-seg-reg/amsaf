@@ -200,10 +200,9 @@ def register_indv(fixed_image,
     if not parameter_map:
         if transform_type == 'rigid':
             parameter_map = _get_default_rigid()
-
         elif transform_type == 'affine':
             parameter_map = _get_default_affine()
-        elif transform_type == 'bspline'
+        elif transform_type == 'bspline':
             parameter_map = _get_default_bspline()
         
     if auto_init: #Make sure still works later
