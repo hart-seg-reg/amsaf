@@ -154,7 +154,10 @@ def register(fixed_image,
     registration_filter.SetMovingImage(moving_image)
 
     if not parameter_maps:
-        parameter_maps = _get_default_vector()
+        parameter_maps = [
+            sitk.GetDefaultParameterMap(t)
+            for t in ['translation', 'affine', 'bspline']
+        ]
     if auto_init:
         parameter_maps = _auto_init_assoc(parameter_maps)
     registration_filter.SetParameterMap(parameter_maps[0])
@@ -198,12 +201,7 @@ def register_indv(fixed_image,
     registration_filter.SetMovingImage(moving_image)
 
     if not parameter_map:
-        if transform_type == 'rigid':
-            parameter_map = _get_default_rigid()
-        elif transform_type == 'affine':
-            parameter_map = _get_default_affine()
-        elif transform_type == 'bspline':
-            parameter_map = _get_default_bspline()
+        parameter_map = sitk.GetDefaultParameterMap(transform_type)
         
     if auto_init: #Make sure still works later
         parameter_map = _auto_init_assoc(parameter_maps)
@@ -427,7 +425,7 @@ def _image_set(dirname, image_type='volume'):
 
 
 def _to_elastix(pm, ttype):
-    elastix_pm = _get_default_vector()
+    elastix_pm = sitk.GetDefaultParameterMap(ttype)
     for k, v in pm.iteritems():
         if type(v) == list:
             elastix_pm[k] = v
