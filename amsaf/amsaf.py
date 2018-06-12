@@ -12,6 +12,7 @@ ranking the results of parameter map instances in a caller-defined search space.
 """
 
 import os
+import sys
 import glob
 
 import SimpleITK as sitk
@@ -204,7 +205,7 @@ def register_indv(fixed_image,
         parameter_map = sitk.GetDefaultParameterMap(transform_type)
         
     if auto_init: #Make sure still works later
-        parameter_map = _auto_init_assoc(parameter_maps)
+        parameter_map = _auto_init_assoc_indv(parameter_map)
     registration_filter.SetParameterMap(parameter_map)
 
     registration_filter.Execute()
@@ -426,7 +427,11 @@ def _image_set(dirname, image_type='volume'):
 
 def _to_elastix(pm, ttype):
     elastix_pm = sitk.GetDefaultParameterMap(ttype)
-    for k, v in pm.iteritems():
+    if sys.version_info[0] >=3:
+        it = pm.items()
+    else:
+        it = pm.iteritems()
+    for k, v in it:
         if type(v) == list:
             elastix_pm[k] = v
         else:
@@ -451,10 +456,21 @@ def _nn_assoc(pms):
 def _auto_init_assoc(pms):
     return _pm_vec_assoc('AutomaticTransformInitialization', 'true', pms)
 
+def _auto_init_assoc_indv(pm):
+    return _pm_assoc('AutomaticTransformInitialization', 'true', pm)
+
 
 def _pm_assoc(k, v, pm):
+    result = dict(pm)
+    result[k] = v
+    return result
+
     result = {}
-    for key, val in pm.iteritems():
+    if sys.version_info[0] >=3:
+        it = pm.items()
+    else:
+        it = pm.iteritems()
+    for key, val in it:
         if key == k:
             result[key] = [v]
         else:
