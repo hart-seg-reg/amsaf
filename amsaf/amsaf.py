@@ -86,15 +86,15 @@ def amsaf_eval(unsegmented_image,
 
     if memoize:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
-            translation_image, translation_pm = register_indv(unsegmented_image, segmented_image, 'translation', rpm, verbose=verbose)
+            rigid_image, rigid_pm = register_indv(unsegmented_image, segmented_image, 'rigid', rpm, verbose=verbose)
             for apm in param_combinations(parameter_priors[1], 'affine'):
-                affine_image, affine_pm = register_indv(translation_image, segmented_image, 'affine', apm, verbose=verbose)
+                affine_image, affine_pm = register_indv(rigid_image, segmented_image, 'affine', apm, verbose=verbose)
                 for bpm in param_combinations(parameter_priors[2], 'bspline'):
-                    bspline_image, bspline_pm = register_indv(bspline_image, segmented_image, bpm, 'bspline', verbose=verbose)
-                    transform_parameter_maps = [rpm, apm, bpm]
-                    transformed_seg = transform(segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
+                    bspline_image, bspline_pm = register_indv(affine_image, segmented_image,'bspline', bpm, verbose=verbose)
+                    transform_parameter_maps = [rigid_pm, affine_pm, bspline_pm]
+                    transformed_seg = transform(segmentation, [_nn_assoc_indv(pm[0]) for pm in transform_parameter_maps], verbose=verbose)
                     if ground_truth is not None:
-                        score = _sim_score(bspline_image, ground_truth)
+                        score = _sim_score(transformed_seg, ground_truth)
                     else:
                         score = 0
                     yield [ transform_parameter_maps , transformed_seg, score]
@@ -157,7 +157,7 @@ def register(fixed_image,
     if not parameter_maps:
         parameter_maps = [
             sitk.GetDefaultParameterMap(t)
-            for t in ['translation', 'affine', 'bspline']
+            for t in ['rigid', 'affine', 'bspline']
         ]
     if auto_init:
         parameter_maps = _auto_init_assoc(parameter_maps)
@@ -204,13 +204,12 @@ def register_indv(fixed_image,
     if not parameter_map:
         parameter_map = sitk.GetDefaultParameterMap(transform_type)
         
-    if auto_init: #Make sure still works later
+    if auto_init:
         parameter_map = _auto_init_assoc_indv(parameter_map)
     registration_filter.SetParameterMap(parameter_map)
-
     registration_filter.Execute()
     result_image = registration_filter.GetResultImage()
-    transform_parameter_maps = registration_filter.GetTransformParameterMap()
+    transform_parameter_map = registration_filter.GetTransformParameterMap()
 
     return result_image, transform_parameter_map
 
@@ -264,9 +263,8 @@ def transform(image, parameter_maps, verbose=False):
     transform_filter.SetTransformParameterMap(parameter_maps)
     transform_filter.SetMovingImage(image)
     transform_filter.Execute()
-    result_image = transform_filter.GetResultImage()
-
-    return result_image
+    image = transform_filter.GetResultImage()
+    return image
 
 
 def read_image(path, ultrasound_slice=False):
@@ -452,6 +450,9 @@ def _nn_assoc(pms):
     return _pm_vec_assoc('ResampleInterpolator',
                          'FinalNearestNeighborInterpolator', pms)
 
+def _nn_assoc_indv(pm):
+    return _pm_assoc('ResampleInterpolator',
+                         'FinalNearestNeighborInterpolator', pm)
 
 def _auto_init_assoc(pms):
     return _pm_vec_assoc('AutomaticTransformInitialization', 'true', pms)
@@ -461,10 +462,6 @@ def _auto_init_assoc_indv(pm):
 
 
 def _pm_assoc(k, v, pm):
-    result = dict(pm)
-    result[k] = v
-    return result
-
     result = {}
     if sys.version_info[0] >=3:
         it = pm.items()
