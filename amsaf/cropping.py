@@ -26,7 +26,7 @@ def split(nifti_file, start, mid, end):
 	else:
 		new_array_data1 = data[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]]
 		new_array_data2 = data[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]]
-	return (nib.Nifti1Image(new_array_data1, nifti_file.affine),
+	return (nib.Nifti1Image(new_array_data1, nifti_file.affine),\
 			nib.Nifti1Image(new_array_data2, nifti_file.affine))
 
 
@@ -43,11 +43,16 @@ def crop(nifti_file, start, end, zero_padding=False):
 
 
 def main():
-	nifti_file = nib.load(sys.argv[1])
-	start = [int(sys.argv[2]), int(sys.argv[4]), int(sys.argv[6])]
-	end = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
-	output_file = sys.argv[8]
+	cmd = sys.argv[1]
+	if cmd == "crop":
+		if sys.argc == 2:
 
+		else:
+			nifti_file = nib.load(sys.argv[2])
+			start = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
+			end = [int(sys.argv[4]), int(sys.argv[6]), int(sys.argv[8])]
+			output_file = sys.argv[9]
+	elif cmd == "split"
 	
 	nib.save(crop(nifti_file, start, end),output_file)
 

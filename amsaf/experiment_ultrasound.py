@@ -1,6 +1,7 @@
 import SimpleITK as sitk
 import amsaf
-
+import cropping
+import sys
 
 def run_amsaf():
     unsegmented_image = sitk.Cast(amsaf.read_image("../../../../srv/ultrasound_data/30deg/trial10_30_w1_volume_TRANS.nii"),
@@ -16,5 +17,22 @@ def run_amsaf():
     amsaf.write_top_k(10, amsaf_results, '../../../../home/chris/amsaf_results')
 
 
+def run_split(parameters):
+
+
+
+
+
+
+def run_crop(parameters):
+
+
+
+
 if __name__ == '__main__':
-    run_amsaf()
+    if sys.argv[0] == "split":
+      run_split(sys.argv)
+    elif sys.argv[0] == "crop":
+      run_crop(sys.argv)
+    else:
+      run_amsaf()
