@@ -14,6 +14,21 @@ import nibabel as nib
 #data is a 3d numpy array with dimensions x,y,z 
 #length of arm, height of arm, cross section of arm
 
+def split(nifti_file, start, mid, end):
+	data = nifti_file.get_data()
+	if zero_padding:
+		new_array_data1 = np.zeros(numpy_array_data.shape)
+		new_array_data2 = np.zeros(numpy_array_data.shape)
+		new_array_data1[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]] \
+			= data[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]]
+		new_array_data2[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]] \
+			= data[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]]
+	else:
+		new_array_data1 = data[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]]
+		new_array_data2 = data[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]]
+	return (nib.Nifti1Image(new_array_data1, nifti_file.affine),
+			nib.Nifti1Image(new_array_data2, nifti_file.affine))
+
 
 def crop(nifti_file, start, end, zero_padding=False):
 	data = nifti_file.get_data()
