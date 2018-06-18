@@ -87,10 +87,13 @@ def amsaf_eval(unsegmented_image,
     if memoize:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
             rigid_image, rigid_pm = register_indv(unsegmented_image, segmented_image, 'rigid', rpm, verbose=verbose)
+            print("Rigid done")
             for apm in param_combinations(parameter_priors[1], 'affine'):
-                affine_image, affine_pm = register_indv(rigid_image, segmented_image, 'affine', apm, verbose=verbose)
+                affine_image, affine_pm = register_indv(rigid_image, segmented_image, 'affine', apm, auto_init=False, verbose=verbose)
+                print("Affine done")
                 for bpm in param_combinations(parameter_priors[2], 'bspline'):
                     bspline_image, bspline_pm = register_indv(affine_image, segmented_image,'bspline', bpm, verbose=verbose)
+                    print("Bspline done")
                     transform_parameter_maps = [rigid_pm, affine_pm, bspline_pm]
                     transformed_seg = transform(segmentation, [_nn_assoc_indv(pm[0]) for pm in transform_parameter_maps], verbose=verbose)
                     if ground_truth is not None:
@@ -537,15 +540,15 @@ DEFAULT_AFFINE = {
     "DefaultPixelValue": ['0.000000'],
     "FinalBSplineInterpolationOrder": ['3.000000'],
     "FixedImagePyramid":
-        ['FixedSmoothingImagePyramid', 'FixedRecursiveImagePyramid'],
+        ['FixedSmoothingImagePyramid', 'FixedRecursiveImagePyramid'],#first one
     "ImageSampler": ['RandomCoordinate'],
-    "Interpolator": ['BSplineInterpolator'],
-    "MaximumNumberOfIterations": ['1024.000000'],
+    "Interpolator": ['BSplineInterpolator'],#Linear Interpolator
+    "MaximumNumberOfIterations": ['1024.000000'],#256
     "MaximumNumberOfSamplingAttempts": ['8.000000'],
     "Metric": ['AdvancedMattesMutualInformation'],
     "MovingImagePyramid": ['MovingSmoothingImagePyramid'],
     "NewSamplesEveryIteration": ['true'],
-    "NumberOfHistogramBins": ['32.000000'],
+    "NumberOfHistogramBins": ['32.000000'],#nonexistant
     "NumberOfResolutions": ['4.000000'],
     "NumberOfSamplesForExactGradient": ['4096.000000'],
     "NumberOfSpatialSamples": ['2048.000000'],
@@ -564,19 +567,19 @@ DEFAULT_BSPLINE = {
     'CheckNumberOfSamples': ["true"],
     'DefaultPixelValue': ['0.000000'],
     'FinalBSplineInterpolationOrder': ['3.000000'],
-    'FinalGridSpacingInPhysicalUnits': ['4.000000', '6.000000'],
+    'FinalGridSpacingInPhysicalUnits': ['4.000000', '6.000000'],#8
     'FixedImagePyramid': ['FixedSmoothingImagePyramid'],
-    'ImageSampler': ['RandomCoordinate'],
+    'ImageSampler': ['RandomCoordinate'],#Missing gridspacingschedule
     'Interpolator': ['LinearInterpolator'],
-    'MaximumNumberOfIterations': ['1024.000000'],
+    'MaximumNumberOfIterations': ['1024.000000'],#256
     'MaximumNumberOfSamplingAttempts': ['8.000000'],
     'Metric':
         [['AdvancedMattesMutualInformation', 'TransformBendingEnergyPenalty']],
-    'Metric0Weight': ['0', '0.5', '1.000000', '2.0'],
+    'Metric0Weight': ['0', '0.5', '1.000000', '2.0'], #1.0
     'Metric1Weight': ['1.000000'],
     'MovingImagePyramid': ["MovingSmoothingImagePyramid"],
     'NewSamplesEveryIteration': ['true'],
-    'NumberOfHistogramBins': ['32.000000'],
+    'NumberOfHistogramBins': ['32.000000'],#nonexistant
     'NumberOfResolutions': ['4.000000'],
     'NumberOfSamplesForExactGradient': ['4096.000000'],
     'NumberOfSpatialSamples': ['2048.000000'],
