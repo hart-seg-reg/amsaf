@@ -14,7 +14,7 @@ def run_amsaf():
                              sitk.sitkUInt16)
 
     amsaf_results = amsaf.amsaf_eval(unsegmented_image, ground_truth, segmented_image, segmentation, get_param_maps(), verbose=True, memoize=False)
-    amsaf.write_top_k(10, amsaf_results, '../../../../home/chris/amsaf_results')
+    amsaf.write_top_k(10, amsaf_results, '/home/chris/amsaf_results')
 
 
 def get_param_maps():
