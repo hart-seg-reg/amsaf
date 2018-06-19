@@ -80,7 +80,7 @@ def get_param_maps():
     'FinalBSplineInterpolationOrder': ['3.000000'],
     'FinalGridSpacingInPhysicalUnits': ['4.000000'],
     'FixedImagePyramid': ['FixedSmoothingImagePyramid'],
-    'GridSpaceSchedule': ['2.803220 1.988100 1.410000 1.000000']
+    'GridSpaceSchedule': ['2.803220 1.988100 1.410000 1.000000'],
     'ImageSampler': ['RandomCoordinate'],
     'Interpolator': ['LinearInterpolator'],
     'MaximumNumberOfIterations': ['1024.000000'],
