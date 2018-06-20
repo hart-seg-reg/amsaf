@@ -1,6 +1,6 @@
 import SimpleITK as sitk
 import amsaf
-import sys
+import sys, time
 
 def run_amsaf():
     directory = "/srv/croppings"
@@ -109,4 +109,7 @@ def get_param_maps():
 
 
 if __name__ == '__main__':
+  start = time.time()
   run_amsaf()
+  end = time.time()
+  print("TIME:", end-start)
