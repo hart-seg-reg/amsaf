@@ -15,6 +15,9 @@ import os
 import sys
 import glob
 
+from joblib import Parallel, delayed
+import multiprocessing as mp
+
 import SimpleITK as sitk
 from sklearn.model_selection import ParameterGrid
 
@@ -30,7 +33,8 @@ def amsaf_eval(unsegmented_image,
                segmentation,
                parameter_priors=None,
                verbose=False, 
-               memoize=False):
+               memoize=False,
+               parallel=False):
     """Main AMSAF functionality
 
     Generate and score new segmentations and corresponding Elastix parameter
@@ -52,6 +56,7 @@ def amsaf_eval(unsegmented_image,
     :param verbose: Optional boolean flag to toggle verbose stdout printing from
                     Elastix.
     :param memoize: Optional boolean flag to toggle memoization optimization
+    :param memoize: Optional boolean flag to toggle parallelization optimization
     :type unsegmented_image: SimpleITK.Image
     :type ground_truth: SimpleITK.Image
     :type segmented_image: SimpleITK.Image
@@ -59,6 +64,7 @@ def amsaf_eval(unsegmented_image,
     :type parameter_priors: dict
     :type verbose: bool
     :type memoize: bool
+    :type parallel: bool
     :returns: A lazy stream of result
               (parameter map vector, result segmentation, segmentation score) lists.
     :rtype: generator
@@ -87,13 +93,10 @@ def amsaf_eval(unsegmented_image,
     if memoize:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
             rigid_image, rigid_pm = register_indv(unsegmented_image, segmented_image, 'rigid', rpm, verbose=verbose)
-            print("Rigid done")
             for apm in param_combinations(parameter_priors[1], 'affine'):
                 affine_image, affine_pm = register_indv(rigid_image, segmented_image, 'affine', apm, auto_init=False, verbose=verbose)
-                print("Affine done")
                 for bpm in param_combinations(parameter_priors[2], 'bspline'):
                     bspline_image, bspline_pm = register_indv(affine_image, segmented_image,'bspline', bpm, verbose=verbose)
-                    print("Bspline done")
                     transform_parameter_maps = [rigid_pm, affine_pm, bspline_pm]
                     transformed_seg = transform(segmentation, [_nn_assoc_indv(pm[0]) for pm in transform_parameter_maps], verbose=verbose)
                     if ground_truth is not None:
@@ -102,6 +105,14 @@ def amsaf_eval(unsegmented_image,
                         score = 0
                     yield [ transform_parameter_maps , transformed_seg, score]
 
+    elif parallel:
+        num_cores = mp.cpu_count()
+        combos = []
+        for rpm in param_combinations(parameter_priors[0], 'rigid'):
+            for apm in param_combinations(parameter_priors[1], 'affine'):
+                for bpm in param_combinations(parameter_priors[2], 'bspline'):
+                    combo.append([rpm, apm, bpm])
+        return Parallel(n_jobs=num_cores)(delayed(eval_pm)(pms) for pms in combos)
     else:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
             for apm in param_combinations(parameter_priors[1], 'affine'):
