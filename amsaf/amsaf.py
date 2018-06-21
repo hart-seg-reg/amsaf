@@ -112,7 +112,7 @@ def amsaf_eval(unsegmented_image,
             for apm in param_combinations(parameter_priors[1], 'affine'):
                 for bpm in param_combinations(parameter_priors[2], 'bspline'):
                     combo.append([rpm, apm, bpm])
-        return Parallel(n_jobs=num_cores)(delayed(eval_pm)(pms) for pms in combos)
+        #return Parallel(n_jobs=num_cores)(delayed(eval_pm)(pms) for pms in combos)
     else:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
             for apm in param_combinations(parameter_priors[1], 'affine'):
