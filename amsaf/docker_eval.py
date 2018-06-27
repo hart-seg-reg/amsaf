@@ -3,18 +3,18 @@ import amsaf
 import sys, time
 
 def run_amsaf():
-    directory = "/srv/croppings"
-    unsegmented_image = sitk.Cast(amsaf.read_image(directory + "10_30_volume_crop1_TRANS.nii"),
-                                  sitk.sitkUInt16)
-    ground_truth = sitk.Cast(amsaf.read_image(directory + "10_30_seg_crop1_TRANS.nii"),
-                             sitk.sitkUInt16)
-    segmented_image = sitk.Cast(amsaf.read_image(directory + "12_30_volume_crop1_TRANS.nii"),
-                                sitk.sitkUInt16)
-    segmentation = sitk.Cast(amsaf.read_image(directory + "12_30_seg_crop1_TRANS.nii"),
-                             sitk.sitkUInt16)
+    directory = "/srv/mri_data/"
+    unsegmented_image = amsaf.read_image(directory + "sub1_full.nii")
+
+    ground_truth = amsaf.read_image(directory + "sub1_full_seg.nii")
+
+    segmented_image = amsaf.read_image(directory + "sub2_full.nii")
+
+    segmentation = amsaf.read_image(directory + "sub2_full_seg.nii")
+
 
     amsaf_results = amsaf.amsaf_eval(unsegmented_image, ground_truth, segmented_image, segmentation, get_param_maps(), verbose=True, memoize=False)
-    amsaf.write_top_k(10, amsaf_results, '/home/chris/amsaf_results')
+    amsaf.write_top_k(10, amsaf_results, '/home/chris/amsaf_results/mri_no_memo/')
 
 
 def get_param_maps():
