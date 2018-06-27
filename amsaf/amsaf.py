@@ -87,6 +87,7 @@ def amsaf_eval(unsegmented_image,
                 for pm in ParameterGrid(option_dict))
 
     if not parameter_priors:
+        print("Using Defaults")
         parameter_priors = _get_default_vector()
 
     if memoize:

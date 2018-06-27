@@ -14,7 +14,7 @@ def run_amsaf():
 
 
     amsaf_results = amsaf.amsaf_eval(unsegmented_image, ground_truth, segmented_image, segmentation, get_param_maps(), verbose=True, memoize=False)
-    amsaf.write_top_k(10, amsaf_results, '/home/chris/amsaf_results/mri_no_memo/')
+    amsaf.write_top_k(1, amsaf_results, '/home/chris/amsaf_results/mri_no_memo/')
 
 
 def get_param_maps():
