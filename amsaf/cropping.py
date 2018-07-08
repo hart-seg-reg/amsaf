@@ -6,6 +6,7 @@ python3 name_of_image_to_be_cropped x_dimension_start x_dimension_end y_dimensio
 
 """
 import os
+from os.path import splitext, basename
 import sys
 import numpy as np
 from nibabel.testing import data_path
@@ -30,6 +31,30 @@ def split(nifti_file, start, mid, end):
 			nib.Nifti1Image(new_array_data2, nifti_file.affine))
 
 
+
+def split_x(f, midpoint_x):
+	nifti_file = nib.load(f)
+	data = nifti_file.get_data()
+	outname1 = splitext(basename(f))[0] + "_crop1.nii"
+	outname2 = splitext(basename(f))[0] + "_crop2.nii"
+	data1 = data[:midpoint_x, :, :]
+	data2 = data[midpoint_x:, :, :]
+	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
+	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
+	nib.save(crop1, outname1)
+	nib.save(crop2, outname2)
+
+def merge(size, pieces, outfile):
+	data = np.zeros(size)
+	for start, piece in pieces:
+		x, y, z = start
+		piece = piece.get_data()
+		x2, y2, z2 = piece.size
+		data[x:x2, y:y2, z:z2] = piece[:,:,:]
+	whole = nib.Nifti1Image(data, nifti_file.affine)
+	nib.save(whole, outfile)
+
+
 def crop(nifti_file, start, end, zero_padding=False):
 	data = nifti_file.get_data()
 	if zero_padding:
@@ -43,12 +68,22 @@ def crop(nifti_file, start, end, zero_padding=False):
 
 
 def main():
-	nifti_file = nib.load(sys.argv[1])
-	start = [int(sys.argv[2]), int(sys.argv[4]), int(sys.argv[6])]
-	end = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
-	output_file = sys.argv[8]
-	
-	nib.save(crop(nifti_file, start, end),output_file)
+	cmd = sys.argv[1]
+	if cmd == "split":
+		if len(sys.argv) == 4:
+			split_x(sys.argv[2], int(sys.argv[3]))
+	elif cmd == "merge":
+		size = (1,2,3)
+		pieces = []
+		outfile = "testing"
+
+	else:
+		nifti_file = nib.load(sys.argv[1])
+		start = [int(sys.argv[2]), int(sys.argv[4]), int(sys.argv[6])]
+		end = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
+		output_file = sys.argv[8]
+			
+		nib.save(crop(nifti_file, start, end),output_file)
 
 	#nib.save(cropper_with_zero_padding(nifti_file, x_dimension_start, x_dimension_end, 
 	#y_dimension_start, y_dimension_end, 
