@@ -27,12 +27,12 @@ def split(nifti_file, start, mid, end):
 	else:
 		new_array_data1 = data[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]]
 		new_array_data2 = data[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]]
-	return (nib.Nifti1Image(new_array_data1, nifti_file.affine),\
-			nib.Nifti1Image(new_array_data2, nifti_file.affine))
+	return nib.Nifti1Image(new_array_data1, nifti_file.affine),\
+			nib.Nifti1Image(new_array_data2, nifti_file.affine)
 
 
 
-def split_x(f, midpoint_x):
+def split_x(f, midpoint_x, save=False):
 	nifti_file = nib.load(f)
 	data = nifti_file.get_data()
 	outname1 = splitext(basename(f))[0] + "_crop1.nii"
@@ -41,18 +41,66 @@ def split_x(f, midpoint_x):
 	data2 = data[midpoint_x:, :, :]
 	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
 	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
-	nib.save(crop1, outname1)
-	nib.save(crop2, outname2)
+	if save:
+		nib.save(crop1, outname1)
+		nib.save(crop2, outname2)
+	else:
+		return crop1, crop2
 
-def merge(size, pieces, outfile):
+def split_y(f, midpoint_y, save=False):
+	nifti_file = nib.load(f)
+	data = nifti_file.get_data()
+	outname1 = splitext(basename(f))[0] + "_crop1.nii"
+	outname2 = splitext(basename(f))[0] + "_crop2.nii"
+	data1 = data[:, :midpoint_y, :]
+	data2 = data[:, midpoint_y:, :]
+	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
+	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
+	if save:
+		nib.save(crop1, outname1)
+		nib.save(crop2, outname2)
+	else:
+		return crop1, crop2
+
+
+def split_z(f, midpoint_z, save=False):
+	nifti_file = nib.load(f)
+	data = nifti_file.get_data()
+	outname1 = splitext(basename(f))[0] + "_crop1.nii"
+	outname2 = splitext(basename(f))[0] + "_crop2.nii"
+	data1 = data[:, :, :midpoint_z]
+	data2 = data[:, :, midpoint_z:]
+	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
+	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
+	if save:
+		nib.save(crop1, outname1)
+		nib.save(crop2, outname2)
+	else:
+		return crop1, crop2
+
+
+
+
+def merge(size, pieces, outfile=None):
 	data = np.zeros(size)
+	count = np.zeros(size)
 	for start, piece in pieces:
 		x, y, z = start
 		piece = piece.get_data()
 		x2, y2, z2 = piece.size
-		data[x:x2, y:y2, z:z2] = piece[:,:,:]
+		data[x:x2, y:y2, z:z2] += piece[:,:,:]
+		count[x:x2, y:y2, z:z2] += 1
+	for x in range(size[0]):
+		for y in range(size[1]):
+			for z in range(size[2]):
+				if data[x, y, z] != 0:
+					count[x, y, z] /= data[x, y, z]
+
 	whole = nib.Nifti1Image(data, nifti_file.affine)
-	nib.save(whole, outfile)
+	if outfile is not None:
+		nib.save(whole, outfile)
+	else: 
+		return whole
 
 
 def crop(nifti_file, start, end, zero_padding=False):
@@ -66,7 +114,7 @@ def crop(nifti_file, start, end, zero_padding=False):
 	return nib.Nifti1Image(new_array_data, nifti_file.affine)
 
 
-
+'''
 def main():
 	cmd = sys.argv[1]
 	if cmd == "split":
@@ -91,3 +139,7 @@ def main():
 
 if __name__ == '__main__':
 	main()
+
+	'''
+
+	
