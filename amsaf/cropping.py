@@ -12,27 +12,9 @@ import numpy as np
 from nibabel.testing import data_path
 import nibabel as nib
 
-#data is a 3d numpy array with dimensions x,y,z 
-#length of arm, height of arm, cross section of arm
-
-def split(nifti_file, start, mid, end):
-	data = nifti_file.get_data()
-	if zero_padding:
-		new_array_data1 = np.zeros(numpy_array_data.shape)
-		new_array_data2 = np.zeros(numpy_array_data.shape)
-		new_array_data1[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]] \
-			= data[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]]
-		new_array_data2[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]] \
-			= data[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]]
-	else:
-		new_array_data1 = data[start[0]:mid[0], start[1]:mid[1], start[2]:mid[2]]
-		new_array_data2 = data[mid[0]:end[0], mid[1]:end[1], mid[2]:end[2]]
-	return nib.Nifti1Image(new_array_data1, nifti_file.affine),\
-			nib.Nifti1Image(new_array_data2, nifti_file.affine)
 
 
-
-def split_x(f, midpoint_x, save=False):
+def split_x(f, midpoint_x, save=True):
 	nifti_file = nib.load(f)
 	data = nifti_file.get_data()
 	outname1 = splitext(basename(f))[0] + "_crop1.nii"
@@ -47,7 +29,7 @@ def split_x(f, midpoint_x, save=False):
 	else:
 		return crop1, crop2
 
-def split_y(f, midpoint_y, save=False):
+def split_y(f, midpoint_y, save=True):
 	nifti_file = nib.load(f)
 	data = nifti_file.get_data()
 	outname1 = splitext(basename(f))[0] + "_crop1.nii"
@@ -63,7 +45,7 @@ def split_y(f, midpoint_y, save=False):
 		return crop1, crop2
 
 
-def split_z(f, midpoint_z, save=False):
+def split_z(f, midpoint_z, save=True):
 	nifti_file = nib.load(f)
 	data = nifti_file.get_data()
 	outname1 = splitext(basename(f))[0] + "_crop1.nii"
@@ -93,8 +75,8 @@ def merge(size, pieces, outfile=None):
 	for x in range(size[0]):
 		for y in range(size[1]):
 			for z in range(size[2]):
-				if data[x, y, z] != 0:
-					count[x, y, z] /= data[x, y, z]
+				if count[x, y, z] != 0:
+					data[x, y, z] /= count[x, y, z]
 
 	whole = nib.Nifti1Image(data, nifti_file.affine)
 	if outfile is not None:
@@ -114,32 +96,28 @@ def crop(nifti_file, start, end, zero_padding=False):
 	return nib.Nifti1Image(new_array_data, nifti_file.affine)
 
 
-'''
+
 def main():
 	cmd = sys.argv[1]
-	if cmd == "split":
-		if len(sys.argv) == 4:
-			split_x(sys.argv[2], int(sys.argv[3]))
-	elif cmd == "merge":
-		size = (1,2,3)
-		pieces = []
-		outfile = "testing"
-
-	else:
+	if cmd == "split_x":
+		split_x(sys.argv[2], int(sys.argv[3]))
+	elif cmd == "split_y":
+		split_y(sys.argv[2], int(sys.argv[3]))
+	elif cmd == "split_z":
+		split_z(sys.argv[2], int(sys.argv[3]))
+	elif cmd == "crop":
 		nifti_file = nib.load(sys.argv[1])
 		start = [int(sys.argv[2]), int(sys.argv[4]), int(sys.argv[6])]
 		end = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
 		output_file = sys.argv[8]
 			
 		nib.save(crop(nifti_file, start, end),output_file)
-
-	#nib.save(cropper_with_zero_padding(nifti_file, x_dimension_start, x_dimension_end, 
-	#y_dimension_start, y_dimension_end, 
-	#z_dimension_start, z_dimension_end),output_file)
+	elif cmd == "merge":
+		size = (1,2,3)
+		pieces = []
+		outfile = "testing"
 
 if __name__ == '__main__':
 	main()
 
-	'''
 
-	
