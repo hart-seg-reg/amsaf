@@ -33,8 +33,7 @@ def amsaf_eval(unsegmented_image,
                segmentation,
                parameter_priors=None,
                verbose=False,
-               memoize=False,
-               parallel=False):
+               memoize=False):
     """Main AMSAF functionality
 
     Generate and score new segmentations and corresponding Elastix parameter
@@ -56,7 +55,6 @@ def amsaf_eval(unsegmented_image,
     :param verbose: Optional boolean flag to toggle verbose stdout printing from
                     Elastix.
     :param memoize: Optional boolean flag to toggle memoization optimization
-    :param parallel: Optional boolean flag to toggle parallelization optimization
     :type unsegmented_image: SimpleITK.Image
     :type ground_truth: SimpleITK.Image
     :type segmented_image: SimpleITK.Image
@@ -64,7 +62,6 @@ def amsaf_eval(unsegmented_image,
     :type parameter_priors: dict
     :type verbose: bool
     :type memoize: bool
-    :type parallel: bool
     :returns: A lazy stream of result
               (parameter map vector, result segmentation, segmentation score) lists.
     :rtype: generator
@@ -87,7 +84,6 @@ def amsaf_eval(unsegmented_image,
                 for pm in ParameterGrid(option_dict))
 
     if not parameter_priors:
-        print("Using Defaults")
         parameter_priors = _get_default_vector()
 
     if memoize:
@@ -105,20 +101,6 @@ def amsaf_eval(unsegmented_image,
                         score = 0
                     yield [ transform_parameter_maps , transformed_seg, score]
 
-    elif parallel:
-        combos = []
-        for rpm in param_combinations(parameter_priors[0], 'rigid'):
-            for apm in param_combinations(parameter_priors[1], 'affine'):
-                for bpm in param_combinations(parameter_priors[2], 'bspline'):
-                    combos.append([rpm, apm, bpm])
-        results = _amsaf_eval_parallel(unsegmented_image,
-                                   ground_truth,
-                                   segmented_image,
-                                   segmentation,
-                                   combos,
-                                   verbose)
-        for result in results:
-            yield result
     else:
         for rpm in param_combinations(parameter_priors[0], 'rigid'):
             for apm in param_combinations(parameter_priors[1], 'affine'):
@@ -470,51 +452,6 @@ def _sim_score(candidate, ground_truth):
     return overlap_filter.GetDiceCoefficient()
 
 
-def _amsaf_eval_parallel(unsegmented_image,
-               ground_truth,
-               segmented_image,
-               segmentation,
-               parameter_combos,
-               verbose):
-
-    num_cores = mp.cpu_count()
-
-    ui_data = sitk.GetArrayFromImage(unsegmented_image)
-    gt_data = sitk.GetArrayFromImage(ground_truth)
-    si_data = sitk.GetArrayFromImage(segmented_image)
-    seg_data = sitk.GetArrayFromImage(segmentation)
-
-    results = Parallel(n_jobs=num_cores, verbose=verbose)(delayed(_segment_parallel)(
-            ui_data,
-            gt_data,
-            si_data,
-            seg_data,
-            pms,
-            verbose=verbose) for pms in parameter_combos)
-    for i in range(len(results)):
-        results[i][1] = sitk.GetImageFromArray(results[i][1])
-    return results
-
-
-def _segment_parallel(ui_data, gt_data, si_data, seg_data,
-            parameter_maps=None,
-            verbose=False):
-
-    unsegmented_image = sitk.GetImageFromArray(ui_data)
-    ground_truth = sitk.GetImageFromArray(gt_data)
-    segmented_image = sitk.GetImageFromArray(si_data)
-    segmentation = sitk.GetImageFromArray(seg_data)
-    _, transform_parameter_maps = register(
-        unsegmented_image, segmented_image, parameter_maps, verbose=verbose)
-
-    trans = transform(
-        segmentation, _nn_assoc(transform_parameter_maps), verbose=verbose)
-    if ground_truth is not None:
-        score = _sim_score(seg, ground_truth)
-    else:
-        score = 0
-    trans_data = sitk.GetArrayFromImage(trans)
-    return [parameter_maps, trans_data, score]
 
 
 def _nn_assoc(pms):

@@ -1,10 +1,4 @@
 
-"""
-Usage:
-
-python3 name_of_image_to_be_cropped x_dimension_start x_dimension_end y_dimension_start y_dimension_end	z_dimension_start z_dimension_end output_file_name
-
-"""
 import os
 from os.path import splitext, basename
 import sys
@@ -13,14 +7,23 @@ from nibabel.testing import data_path
 import nibabel as nib
 
 
+def get_size(nifti_file):
+	return nifti_file.get_data().shape
 
-def split_x(f, midpoint_x, save=True):
+
+def split_x(f, midpoint_x, save=True, padding=True):
 	nifti_file = nib.load(f)
 	data = nifti_file.get_data()
 	outname1 = splitext(basename(f))[0] + "_crop1.nii"
 	outname2 = splitext(basename(f))[0] + "_crop2.nii"
-	data1 = data[:midpoint_x, :, :]
-	data2 = data[midpoint_x:, :, :]
+	if padding:
+		data1 = np.zeros(data.shape)
+		data2 = np.zeros(data.shape)
+		data1[:midpoint_x, :, :] = data[:midpoint_x, :, :]
+		data2[midpoint_x:, :, :] = data[midpoint_x:, :, :]
+	else:
+		data1 = data[:midpoint_x, :, :]
+		data2 = data[midpoint_x:, :, :]
 	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
 	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
 	if save:
@@ -29,13 +32,19 @@ def split_x(f, midpoint_x, save=True):
 	else:
 		return crop1, crop2
 
-def split_y(f, midpoint_y, save=True):
+def split_y(f, midpoint_y, save=True, padding=True):
 	nifti_file = nib.load(f)
 	data = nifti_file.get_data()
 	outname1 = splitext(basename(f))[0] + "_crop1.nii"
 	outname2 = splitext(basename(f))[0] + "_crop2.nii"
-	data1 = data[:, :midpoint_y, :]
-	data2 = data[:, midpoint_y:, :]
+	if padding:
+		data1 = np.zeros(data.shape)
+		data2 = np.zeros(data.shape)
+		data1[:, :midpoint_y, :] = data[:, :midpoint_y, :]
+		data2[:, midpoint_y:, :] = data[:, midpoint_y:, :]
+	else:
+		data1 = data[:, :midpoint_y, :]
+		data2 = data[:, midpoint_y:, :]
 	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
 	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
 	if save:
@@ -45,13 +54,19 @@ def split_y(f, midpoint_y, save=True):
 		return crop1, crop2
 
 
-def split_z(f, midpoint_z, save=True):
+def split_z(f, midpoint_z, save=True, padding=True):
 	nifti_file = nib.load(f)
 	data = nifti_file.get_data()
 	outname1 = splitext(basename(f))[0] + "_crop1.nii"
 	outname2 = splitext(basename(f))[0] + "_crop2.nii"
-	data1 = data[:, :, :midpoint_z]
-	data2 = data[:, :, midpoint_z:]
+	if padding:
+		data1 = np.zeros(data.shape)
+		data2 = np.zeros(data.shape)
+		data1[:, :, :midpoint_z] = data[:, :, :midpoint_z]
+		data2[:, :, midpoint_z:] = data[:, :, midpoint_z:]
+	else:
+		data1 = data[:, :, :midpoint_z]
+		data2 = data[:, :, midpoint_z:]
 	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
 	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
 	if save:
@@ -59,6 +74,7 @@ def split_z(f, midpoint_z, save=True):
 		nib.save(crop2, outname2)
 	else:
 		return crop1, crop2
+
 
 
 
@@ -75,7 +91,7 @@ def merge(size, pieces, outfile=None):
 	for x in range(size[0]):
 		for y in range(size[1]):
 			for z in range(size[2]):
-				if count[x, y, z] != 0:
+				if count[x, y, z] > 1:
 					data[x, y, z] /= count[x, y, z]
 
 	whole = nib.Nifti1Image(data, nifti_file.affine)
@@ -85,9 +101,9 @@ def merge(size, pieces, outfile=None):
 		return whole
 
 
-def crop(nifti_file, start, end, zero_padding=False):
+def crop(nifti_file, start, end, padding=True):
 	data = nifti_file.get_data()
-	if zero_padding:
+	if padding:
 		new_array_data = np.zeros(numpy_array_data.shape)
 		new_array_data[start[0]:end[0], start[1]:end[1], start[2]:end[2]] \
 			= data[start[0]:end[0], start[1]:end[1], start[2]:end[2]]
@@ -100,12 +116,12 @@ def crop(nifti_file, start, end, zero_padding=False):
 def main():
 	cmd = sys.argv[1]
 	if cmd == "split_x":
-		split_x(sys.argv[2], int(sys.argv[3]))
+		split_x(sys.argv[2], int(sys.argv[3]), padding=False)
 	elif cmd == "split_y":
 		split_y(sys.argv[2], int(sys.argv[3]))
 	elif cmd == "split_z":
-		split_z(sys.argv[2], int(sys.argv[3]))
-	elif cmd == "crop":
+		split_z(sys.argv[2], int(sys.argv[3]), padding=False)
+	elif cmd is not None:
 		nifti_file = nib.load(sys.argv[1])
 		start = [int(sys.argv[2]), int(sys.argv[4]), int(sys.argv[6])]
 		end = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
