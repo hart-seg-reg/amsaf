@@ -54,7 +54,7 @@ def amsaf_eval(unsegmented_image,
                              consideration.
     :param verbose: Optional boolean flag to toggle verbose stdout printing from
                     Elastix.
-    :param memoize: Optional boolean flag to toggle memoization optimization
+    :param memoize: Optional boolean flag to toggle memoized optimization. Warning: experimental
     :type unsegmented_image: SimpleITK.Image
     :type ground_truth: SimpleITK.Image
     :type segmented_image: SimpleITK.Image
