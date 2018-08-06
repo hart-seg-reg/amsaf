@@ -5,38 +5,49 @@ import sys
 import numpy as np
 from nibabel.testing import data_path
 import nibabel as nib
+import amsaf
+import SimpleITK as sitk
 
 
-def get_size(nifti_file):
-	return nifti_file.get_data().shape
+def split_x(img, midpoint_x, padding=False):
+	"""Splits image into two separate images along an x-plane
+	Returns both halves of the image, returning the image with lower x values first
 
-
-def split_x(f, midpoint_x, save=True, padding=True):
-	nifti_file = nib.load(f)
-	data = nifti_file.get_data()
-	outname1 = splitext(basename(f))[0] + "_crop1.nii"
-	outname2 = splitext(basename(f))[0] + "_crop2.nii"
+    :param img: Image to be split
+    :param midpoint_x: x value specifying plane to split image along
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type midpoint_x: int
+    :type padding: bool
+    :rtype: (SimpleITK.Image, SimpleITK.Image)
+    """
+	data = sitk.GetArrayFromImage(img)
 	if padding:
 		data1 = np.zeros(data.shape)
 		data2 = np.zeros(data.shape)
-		data1[:midpoint_x, :, :] = data[:midpoint_x, :, :]
-		data2[midpoint_x:, :, :] = data[midpoint_x:, :, :]
+		data1[:, :, :midpoint_x] = data[:, :, :midpoint_x]
+		data2[:, :, midpoint_x:] = data[:, :, midpoint_x:]
 	else:
 		data1 = data[:midpoint_x, :, :]
 		data2 = data[midpoint_x:, :, :]
-	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
-	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
-	if save:
-		nib.save(crop1, outname1)
-		nib.save(crop2, outname2)
-	else:
-		return crop1, crop2
 
-def split_y(f, midpoint_y, save=True, padding=True):
-	nifti_file = nib.load(f)
-	data = nifti_file.get_data()
-	outname1 = splitext(basename(f))[0] + "_crop1.nii"
-	outname2 = splitext(basename(f))[0] + "_crop2.nii"
+	crop1 = sitk.GetImageFromArray(data1)
+	crop2 = sitk.GetImageFromArray(data2)
+	return crop1, crop2
+
+def split_y(img, midpoint_y, padding=False):
+	"""Splits image into two separate images along an y-plane
+	Returns both halves of the image, returning the image with lower y values first
+
+    :param img: Image to be split
+    :param midpoint_y: y value specifying plane to split image along
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type midpoint_y: int
+    :type padding: bool
+    :rtype: (SimpleITK.Image, SimpleITK.Image)
+    """
+	data = sitk.GetArrayFromImage(img)
 	if padding:
 		data1 = np.zeros(data.shape)
 		data2 = np.zeros(data.shape)
@@ -45,37 +56,45 @@ def split_y(f, midpoint_y, save=True, padding=True):
 	else:
 		data1 = data[:, :midpoint_y, :]
 		data2 = data[:, midpoint_y:, :]
-	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
-	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
-	if save:
-		nib.save(crop1, outname1)
-		nib.save(crop2, outname2)
-	else:
-		return crop1, crop2
+	crop1 = sitk.GetImageFromArray(data1)
+	crop2 = sitk.GetImageFromArray(data2)
+	return crop1, crop2
 
 
-def split_z(f, midpoint_z, save=True, padding=True):
-	nifti_file = nib.load(f)
-	data = nifti_file.get_data()
-	outname1 = splitext(basename(f))[0] + "_crop1.nii"
-	outname2 = splitext(basename(f))[0] + "_crop2.nii"
+def split_z(img, midpoint_z, padding=False):
+	"""Splits image into two separate images along an z-plane
+	Returns both halves of the image, returning the image with lower z values first
+
+    :param img: Image to be split
+    :param midpoint_z: z value specifying plane to split image along
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type midpoint_z: int
+    :type padding: bool
+    :rtype: (SimpleITK.Image, SimpleITK.Image)
+    """
+	data = sitk.GetArrayFromImage(img)
 	if padding:
 		data1 = np.zeros(data.shape)
 		data2 = np.zeros(data.shape)
-		data1[:, :, :midpoint_z] = data[:, :, :midpoint_z]
-		data2[:, :, midpoint_z:] = data[:, :, midpoint_z:]
+		data1[:midpoint_z, :, :] = data[:midpoint_z, :, :]
+		data2[midpoint_z:, :, :] = data[midpoint_z:, :, :]
 	else:
-		data1 = data[:, :, :midpoint_z]
-		data2 = data[:, :, midpoint_z:]
-	crop1 = nib.Nifti1Image(data1, nifti_file.affine)
-	crop2 = nib.Nifti1Image(data2, nifti_file.affine)
-	if save:
-		nib.save(crop1, outname1)
-		nib.save(crop2, outname2)
+		data1 = data[:midpoint_z, :, :]
+		data2 = data[midpoint_z:, :, :]
+	crop1 = sitk.GetImageFromArray(data1)
+	crop2 = sitk.GetImageFromArray(data2)
+	return crop1, crop2
+
+def crop(img, start, end, padding=False):
+	data = sitk.GetArrayFromImage(img)
+	if padding:
+		new_array_data = np.zeros(data.shape)
+		new_array_data[start[2]:end[2], start[1]:end[1], start[0]:end[0]] \
+			= data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
 	else:
-		return crop1, crop2
-
-
+		new_array_data = data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
+	return sitk.GetImageFromArray(new_array_data)
 
 
 
@@ -95,21 +114,18 @@ def merge(size, pieces, outfile=None):
 					data[x, y, z] /= count[x, y, z]
 
 	whole = nib.Nifti1Image(data, nifti_file.affine)
-	if outfile is not None:
-		nib.save(whole, outfile)
-	else: 
-		return whole
+	return whole
 
 
-def crop(nifti_file, start, end, padding=True):
-	data = nifti_file.get_data()
+def crop(img, start, end, padding=False):
+	data = sitk.GetArrayFromImage(img)
 	if padding:
-		new_array_data = np.zeros(numpy_array_data.shape)
-		new_array_data[start[0]:end[0], start[1]:end[1], start[2]:end[2]] \
-			= data[start[0]:end[0], start[1]:end[1], start[2]:end[2]]
+		new_array_data = np.zeros(data.shape)
+		new_array_data[start[2]:end[2], start[1]:end[1], start[0]:end[0]] \
+			= data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
 	else:
-		new_array_data = data[start[0]:end[0], start[1]:end[1], start[2]:end[2]]
-	return nib.Nifti1Image(new_array_data, nifti_file.affine)
+		new_array_data = data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
+	return sitk.GetImageFromArray(new_array_data)
 
 
 
@@ -134,6 +150,7 @@ def main():
 		outfile = "testing"
 
 if __name__ == '__main__':
-	main()
+#	main()
+	pass
 
 
