@@ -87,6 +87,18 @@ def split_z(img, midpoint_z, padding=False):
 	return crop1, crop2
 
 def crop(img, start, end, padding=False):
+	"""Crops image along a bounding box specified by start and end
+
+    :param img: Image to be cropped
+    :param start: Tuple consisting of lower valued coordinates to define bounding box
+    :param end: Tuple consisting of higher valued coordinates to define bounding box
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type start: (int, int, int)
+    :type end: (int, int, int)
+    :type padding: bool
+    :rtype: SimpleITK.Image
+    """
 	data = sitk.GetArrayFromImage(img)
 	if padding:
 		new_array_data = np.zeros(data.shape)
