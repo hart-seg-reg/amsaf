@@ -119,10 +119,10 @@ def write_top_k(k, amsaf_results, path):
     Each subdirectory contains the result's corresponding parameter maps,
     segmentation, and score.
 
-    :param k: Number of results to write
+    :param k: Number of results to write. If k == 0, returns all results
     :param amsaf_results: Results in the format of amsaf_eval return value
     :param path: Filepath to write results at
-    :type: k: int
+    :type k: int
     :type amsaf_result: [[SimpleITK.ParameterMap, SimpleITK.Image, float]]
     :type path: str
     :rtype: None
@@ -412,6 +412,107 @@ def seg_map_all(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir
     matches = sub1_images.intersection(sub2_images)
     return seg_map(segmented_subject_dir, unsegmented_subject_dir, segmentation_dir, matches,
                    parameter_maps=parameter_maps, strict=strict)
+
+def split_x(img, midpoint_x, padding=False):
+    """Splits image into two separate images along an x-plane
+    Returns both halves of the image, returning the image with lower x values first
+
+    :param img: Image to be split
+    :param midpoint_x: x value specifying plane to split image along
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type midpoint_x: int
+    :type padding: bool
+    :rtype: (SimpleITK.Image, SimpleITK.Image)
+    """
+    data = sitk.GetArrayFromImage(img)
+    if padding:
+        data1 = np.zeros(data.shape)
+        data2 = np.zeros(data.shape)
+        data1[:, :, :midpoint_x] = data[:, :, :midpoint_x]
+        data2[:, :, midpoint_x:] = data[:, :, midpoint_x:]
+    else:
+        data1 = data[:midpoint_x, :, :]
+        data2 = data[midpoint_x:, :, :]
+
+    crop1 = sitk.GetImageFromArray(data1)
+    crop2 = sitk.GetImageFromArray(data2)
+    return crop1, crop2
+
+def split_y(img, midpoint_y, padding=False):
+    """Splits image into two separate images along an y-plane
+    Returns both halves of the image, returning the image with lower y values first
+
+    :param img: Image to be split
+    :param midpoint_y: y value specifying plane to split image along
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type midpoint_y: int
+    :type padding: bool
+    :rtype: (SimpleITK.Image, SimpleITK.Image)
+    """
+    data = sitk.GetArrayFromImage(img)
+    if padding:
+        data1 = np.zeros(data.shape)
+        data2 = np.zeros(data.shape)
+        data1[:, :midpoint_y, :] = data[:, :midpoint_y, :]
+        data2[:, midpoint_y:, :] = data[:, midpoint_y:, :]
+    else:
+        data1 = data[:, :midpoint_y, :]
+        data2 = data[:, midpoint_y:, :]
+    crop1 = sitk.GetImageFromArray(data1)
+    crop2 = sitk.GetImageFromArray(data2)
+    return crop1, crop2
+
+
+def split_z(img, midpoint_z, padding=False):
+    """Splits image into two separate images along an z-plane
+    Returns both halves of the image, returning the image with lower z values first
+
+    :param img: Image to be split
+    :param midpoint_z: z value specifying plane to split image along
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type midpoint_z: int
+    :type padding: bool
+    :rtype: (SimpleITK.Image, SimpleITK.Image)
+    """
+    data = sitk.GetArrayFromImage(img)
+    if padding:
+        data1 = np.zeros(data.shape)
+        data2 = np.zeros(data.shape)
+        data1[:midpoint_z, :, :] = data[:midpoint_z, :, :]
+        data2[midpoint_z:, :, :] = data[midpoint_z:, :, :]
+    else:
+        data1 = data[:midpoint_z, :, :]
+        data2 = data[midpoint_z:, :, :]
+    crop1 = sitk.GetImageFromArray(data1)
+    crop2 = sitk.GetImageFromArray(data2)
+    return crop1, crop2
+
+def crop(img, start, end, padding=False):
+    """Crops image along a bounding box specified by start and end
+
+    :param img: Image to be cropped
+    :param start: Tuple consisting of lower valued coordinates to define bounding box
+    :param end: Tuple consisting of higher valued coordinates to define bounding box
+    :param padding: Optional boolean to specify zero padding
+    :type img: SimpleITK.Image
+    :type start: (int, int, int)
+    :type end: (int, int, int)
+    :type padding: bool
+    :rtype: SimpleITK.Image
+    """
+    data = sitk.GetArrayFromImage(img)
+    if padding:
+        new_array_data = np.zeros(data.shape)
+        new_array_data[start[2]:end[2], start[1]:end[1], start[0]:end[0]] \
+            = data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
+    else:
+        new_array_data = data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
+    return sitk.GetImageFromArray(new_array_data)
+
+
 
 
 ##########################
