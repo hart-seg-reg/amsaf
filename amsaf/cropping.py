@@ -109,35 +109,71 @@ def crop(img, start, end, padding=False):
 	return sitk.GetImageFromArray(new_array_data)
 
 
-
+	#NOTE: check to make sure x/y/z are correct order
 def merge(size, pieces, outfile=None):
 	data = np.zeros(size)
-	count = np.zeros(size)
+	storage = {}
+	#Consolidate possible pixel values
 	for start, piece in pieces:
-		x, y, z = start
-		piece = piece.get_data()
+		x1, y1, z1 = start
+		piece = sitk.GetArrayFromImage(piece)
 		x2, y2, z2 = piece.size
-		data[x:x2, y:y2, z:z2] += piece[:,:,:]
-		count[x:x2, y:y2, z:z2] += 1
+		for x in range(x2):
+			for y in range(y2):
+				for z in range(z2):
+					location = (x + x1, y + y1, z + z2)
+					if location in storage.keys()
+						storage[location].append(piece[x, y, z])
+					else:
+						storage[location] = [piece[x, y, z]]
+	#Fill in undisputed values and gather disputed
+	disputed = {}
+	undisputed = {}
 	for x in range(size[0]):
 		for y in range(size[1]):
 			for z in range(size[2]):
-				if count[x, y, z] > 1:
-					data[x, y, z] /= count[x, y, z]
+				location = (x, y, z)
+				if location not in storage.keys():
+					data[x, y, z] = 0
+				else if len(storage[location]) == 1:
+					data[x, y, z] = storage[location][0]
+					undisputed[location] = storage[location][0]
+				else:
+					disputed[location] = storage[location]
 
-	whole = nib.Nifti1Image(data, nifti_file.affine)
+	#Consolidate overlaps
+	def consolidate(arr):
+		return arr
+
+	for location in disputed.keys()
+		pos = consolidate(disputed[location])
+		if len(pos) == 1:
+			data[location[0], location[1], location[2]] = pos[0]
+			
+		else:
+			disputed[location] = arr
+
+
+	#Perform KNN
+	def dist(val1, val2):
+		return (val1[0] - val2[0])**2 + (val1[1] - val2[1])**2 \
+					+ (val1[2] - val2[2])**2
+
+	k = 10
+
+	for location in disputed.keys()
+		h = []
+		for neighbor in undisputed.keys():
+			heapq.heappush(h, (dist(neighbor, location), ))
+
+
+
+
+
+
+
+	whole = sitk.GetImageFromArray(data)
 	return whole
-
-
-def crop(img, start, end, padding=False):
-	data = sitk.GetArrayFromImage(img)
-	if padding:
-		new_array_data = np.zeros(data.shape)
-		new_array_data[start[2]:end[2], start[1]:end[1], start[0]:end[0]] \
-			= data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
-	else:
-		new_array_data = data[start[2]:end[2], start[1]:end[1], start[0]:end[0]]
-	return sitk.GetImageFromArray(new_array_data)
 
 
 
