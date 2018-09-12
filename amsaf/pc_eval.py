@@ -13,21 +13,25 @@ def run_amsaf():
     dir2 = "/Users/chris/Desktop/HART/ultrasound_data/Sub2/unprocessed/"
     dirB = "/Users/chris/Desktop/HART/ultrasound_data/SubB/"
     sb = "/Users/chris/Desktop/HART/ultrasound_data/sandbox/"
-    unsegmented_image = amsaf.read_image(dirB + "subB_90_p5_volume.nii", True)
+    unsegmented_image = amsaf.read_image(dirB + "subB_60_fs_volume.nii", True)
     ground_truth = None #amsaf.read_image(directory + "sub1_30_fs_seg_crop1.nii", True)
     segmented_image = amsaf.read_image(dirB + "subB_30_fs_volume.nii", True)
-    segmentation = amsaf.read_image(dir1 + "subB_30_fs_seg.nii", True)
+    segmentation = amsaf.read_image(dirB + "subB_30_fs_seg.nii", True)
 
     #segmentation = amsaf.transform(segmentation, get_rotation(segmentation), verbose)
     #segmented_image = amsaf.transform(segmented_image, get_rotation(segmented_image), verbose)
 
-    #segmentation = amsaf.transform(segmentation, get_init_transform(segmentation), verbose)
-    #segmented_image = amsaf.transform(segmented_image, get_init_transform(segmented_image), verbose)
-
+    tp = np.array([[1.0, 0, 0],
+                    [0, 1.0, 0], 
+                    [0, 0.0, 1.0],
+                    [0.0, 0.0, -100.0]])
+    
+    segmentation = amsaf.transform(segmentation, amsaf.init_affine_transform(segmentation, tp), verbose)
+    segmented_image = amsaf.transform(segmented_image, amsaf.init_affine_transform(segmented_image, tp), verbose)
 
 
     amsaf_results = amsaf.amsaf_eval(unsegmented_image, ground_truth, segmented_image, segmentation, get_param_maps(), verbose=verbose)
-    amsaf.write_top_k(10, amsaf_results, 'subB_30_fs_to_90_p5')
+    amsaf.write_top_k(10, amsaf_results, 'subB_30_fs_to_60_fs')
 
 def transform():
     verbose = False
