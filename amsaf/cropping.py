@@ -3,11 +3,12 @@ import os
 from os.path import splitext, basename
 import sys
 import numpy as np
-from nibabel.testing import data_path
-import nibabel as nib
 import amsaf
 import SimpleITK as sitk
+import heapq
+from collections import Counter
 
+#argparse?
 
 def split_x(img, midpoint_x, padding=False):
 	"""Splits image into two separate images along an x-plane
@@ -110,10 +111,12 @@ def crop(img, start, end, padding=False):
 
 
 	#NOTE: check to make sure x/y/z are correct order
-def merge(size, pieces, outfile=None):
-	data = np.zeros(size)
+def merge(img_size, pieces, k=10):
+	data = np.zeros(img_size)
 	storage = {}
-	#Consolidate possible pixel values
+	
+
+	#Consolidate voxels from all images
 	for start, piece in pieces:
 		x1, y1, z1 = start
 		piece = sitk.GetArrayFromImage(piece)
@@ -126,12 +129,14 @@ def merge(size, pieces, outfile=None):
 						storage[location].append(piece[x, y, z])
 					else:
 						storage[location] = [piece[x, y, z]]
+	
+
 	#Fill in undisputed values and gather disputed
 	disputed = {}
 	undisputed = {}
-	for x in range(size[0]):
-		for y in range(size[1]):
-			for z in range(size[2]):
+	for x in range(img_size[0]):
+		for y in range(img_size[1]):
+			for z in range(img_size[2]):
 				location = (x, y, z)
 				if location not in storage.keys():
 					data[x, y, z] = 0
@@ -141,15 +146,21 @@ def merge(size, pieces, outfile=None):
 				else:
 					disputed[location] = storage[location]
 
-	#Consolidate overlaps
+
+	#Consolidate overlapping voxels
 	def consolidate(arr):
-		return arr
+		return list(set(arr))
 
 	for location in disputed.keys()
 		pos = consolidate(disputed[location])
+		if len(pos) == 0:
+			data[location[0], location[1], location[2]] = 0
+			undisputed[location] = 0
+			del disputed[location]
 		if len(pos) == 1:
 			data[location[0], location[1], location[2]] = pos[0]
-			
+			undisputed[location] = pos[0]
+			del disputed[location]
 		else:
 			disputed[location] = arr
 
@@ -159,44 +170,39 @@ def merge(size, pieces, outfile=None):
 		return (val1[0] - val2[0])**2 + (val1[1] - val2[1])**2 \
 					+ (val1[2] - val2[2])**2
 
-	k = 10
-
 	for location in disputed.keys()
 		h = []
+
 		for neighbor in undisputed.keys():
-			heapq.heappush(h, (dist(neighbor, location), ))
+			h.append(dist(neighbor, location), undisputed[neighbor])
+		heapq.heapify(h)
+
+		nearby = Counter(heapq.nsmallest(k,h))
+
+		data[location[0], location[1], location[2]]\
+				= max(nearby, key=lambda x: nearby[x])
 
 
-
-
-
-
-
+	#reconstruct and return image
 	whole = sitk.GetImageFromArray(data)
 	return whole
 
 
 
 def main():
-	cmd = sys.argv[1]
-	if cmd == "split_x":
-		split_x(sys.argv[2], int(sys.argv[3]), padding=False)
-	elif cmd == "split_y":
-		split_y(sys.argv[2], int(sys.argv[3]))
-	elif cmd == "split_z":
-		split_z(sys.argv[2], int(sys.argv[3]), padding=False)
-	elif cmd is not None:
-		nifti_file = nib.load(sys.argv[1])
-		start = [int(sys.argv[2]), int(sys.argv[4]), int(sys.argv[6])]
-		end = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
-		output_file = sys.argv[8]
-			
-		nib.save(crop(nifti_file, start, end),output_file)
-	elif cmd == "merge":
-		size = (1,2,3)
-		pieces = []
-		outfile = "testing"
+	if len(sys.argv) > 1:
+		cmd = sys.argv[1]
+		if cmd == "merge":
 
+
+		elif cmd is not None:
+			nifti_file = amsaf.read_image(sys.argv[1], True)
+			start = [int(sys.argv[2]), int(sys.argv[4]), int(sys.argv[6])]
+			end = [int(sys.argv[3]), int(sys.argv[5]), int(sys.argv[7])]
+			output_file = sys.argv[8]
+				
+			amsaf.write_image(crop(img, start, end),output_file)
+	
 if __name__ == '__main__':
 #	main()
 	pass

@@ -24,7 +24,7 @@ def run_amsaf():
     tp = np.array([[1.0, 0, 0],
                     [0, 1.0, 0], 
                     [0, 0.0, 1.0],
-                    [0.0, 0.0, -100.0]])
+                    [0.0, 0.0, -50.0]])
     
     segmentation = amsaf.transform(segmentation, amsaf.init_affine_transform(segmentation, tp), verbose)
     segmented_image = amsaf.transform(segmented_image, amsaf.init_affine_transform(segmented_image, tp), verbose)

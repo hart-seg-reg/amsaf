@@ -15,8 +15,7 @@ import os
 import sys
 import glob
 
-from joblib import Parallel, delayed
-import multiprocessing as mp
+import numpy as np
 
 import SimpleITK as sitk
 from sklearn.model_selection import ParameterGrid
@@ -513,6 +512,37 @@ def crop(img, start, end, padding=False):
     return sitk.GetImageFromArray(new_array_data)
 
 
+def init_affine_transform(img, transform, center=None):
+    """Initializes an affine transform parameter map for a given image.
+
+    The transform fits the following format: T(x) = A(x-c) + c + t
+
+    :param img: Image to be transformed
+    :param transform: 4x3 numpy array consisting of affine matrix and a translational vector
+    :param center: Center of rotation. If none given, geometric center is used
+    :type img: SimpleITK.Image
+    :type transform: numpy.ndarray
+    :type center: (int, int, int)
+    :rtype: dict
+    """
+    affine = _get_default_affine_transform()
+
+    f = lambda x: tuple([str(i) for i in x])
+    affine['Size'] = f(img.GetSize())
+    affine['Spacing'] = f(img.GetSpacing())
+    affine['Origin'] = f(img.GetOrigin())
+    affine['Direction'] = f(img.GetDirection())
+    affine['CenterOfRotationPoint'] = affine['Origin']
+
+    if center:
+        affine['CenterOfRotationPoint'] = f(center)
+    else:
+        offset = [.5*x*y for x, y in zip(img.GetSize(), img.GetSpacing())]
+        affine['CenterOfRotationPoint'] = f([x + y for x, y in zip(offset, img.GetOrigin())])
+
+    affine['TransformParameters'] = f(transform.ravel())
+    return affine
+
 
 
 ##########################
@@ -599,6 +629,8 @@ def _get_default_affine():
 def _get_default_bspline():
     return DEFAULT_BSPLINE
 
+def _get_default_affine_transform():
+    return DEFAULT_AFFINE_TRANSFORM
 
 def _get_default_vector():
     return [_get_default_rigid(), _get_default_affine(), _get_default_bspline()]
@@ -698,3 +730,20 @@ DEFAULT_BSPLINE = {
     'WriteIterationInfo': ['false'],
     'WriteResultImage': ['true']
 }
+
+DEFAULT_AFFINE_TRANSFORM =  {
+    'AutomaticScalesEstimation': ('True'),
+    'CenterOfRotationPoint': ('0.0', '0.0', '0.0'), 
+    'CompressResultImage': ('false',), 
+    'DefaultPixelValue': ('0.000000',), 
+    'FinalBSplineInterpolationOrder': ('3',),
+    'FixedInternalImagePixelType': ('float',), 
+    'Index': ('0', '0', '0'), 
+    'NumberOfParameters': ('12',),  
+    'ResampleInterpolator': ['FinalNearestNeighborInterpolator'], 
+    'Resampler': ('DefaultResampler',), 
+    'ResultImageFormat': ('nii',), 
+    'ResultImagePixelType': ('float',), 
+    'Transform': ('AffineTransform',),
+    'UseDirectionCosines': ('true',)
+    }
