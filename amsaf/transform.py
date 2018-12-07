@@ -4,7 +4,19 @@ import numpy as np
 import SimpleITK as sitk
 
 
+"""
+File to run affine transforms on sitk images
 
+Required dependencies: SimpleElastix, Numpy
+
+Main code of file is contained in run().
+
+Modify parameters at bottom of file to change inputs of run.
+
+Documentation of parameters is defined in run
+
+
+"""
     
 
 def run(filein, fileout, A, t, c, ultrasound=False, verbose=False):
