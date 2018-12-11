@@ -1,6 +1,7 @@
 
 import numpy as np
-
+import csv
+import sys
 import SimpleITK as sitk
 
 
@@ -18,6 +19,8 @@ Documentation of parameters is defined in run
 
 """
     
+
+def 
 
 def run(filein, fileout, A, t, c, ultrasound=False, verbose=False):
     """
@@ -168,20 +171,51 @@ DEFAULT_AFFINE = {
     "WriteResultImage": ['true'],
 }
 
+
+
+def perform_transforms(filename):
+    with open(filename) as csv_file:
+        cvs_reader = csv.read(csv_file, delimiter=",")
+        for row in csv_reader:
+            filein = row[0]
+            fileout = row[1]
+            A = np.array([[float(row[2]), float(row[3]), float(row[4])],
+                        [float(row[5]), float(row[6]), float(row[7])],
+                        [float(row[8]), float(row[9]), float(row[10])]])
+            t = np.array([[float(row[11]), float(row[12]), float(row[13])]])
+            if row[14].lower() == "none":
+                c = None
+            elif row[14].lower() == "origin":
+                c = "origin"
+            else
+                c = np.array([[float(row[14]), float(row[15]), float(row[16])]])
+            if len(row) > 17:
+                ultrasound = bool(row[17])
+            else:
+                ultrasound = False
+            if len(row) > 18:
+                verbose = bool(row[18])
+            else:
+                verbose = False
+
+            run(filein, fileout, A, t, c, ultrasound, verbose)
+
 if __name__ == "__main__":
-    filein = "SAMPLE FILE IN"
-    fileout = "SAMPLE FILE OUT"
-    A = np.array([[1, 0, 0],
-                [0, 1, 0],
-                [0, 0, 1]])
+    if len(sys.argv) == 1:
+        filein = "SAMPLE FILE IN"
+        fileout = "SAMPLE FILE OUT"
+        A = np.array([[1, 0, 0],
+                    [0, 1, 0],
+                    [0, 0, 1]])
 
-    t = np.array([[0, 0, 0]])
-    c = None
-    ultrasound = True
-    verbose = False
+        t = np.array([[0, 0, 0]])
+        c = None
+        ultrasound = True
+        verbose = False
 
-    run(filein, fileout, A, t, c, ultrasound, verbose)
-
+        run(filein, fileout, A, t, c, ultrasound, verbose)
+    else:
+        perform_transforms(sys.argv[1])
 
 
 
