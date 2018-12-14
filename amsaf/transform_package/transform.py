@@ -2,7 +2,9 @@
 import numpy as np
 import csv
 import sys
+import os
 import SimpleITK as sitk
+import xlrd
 
 
 """
@@ -20,7 +22,7 @@ Documentation of parameters is defined in run
 """
     
 
-def 
+
 
 def run(filein, fileout, A, t, c, ultrasound=False, verbose=False):
     """
@@ -92,6 +94,7 @@ def transform(image, parameter_maps, verbose=False):
     :returns: Transformed image
     :rtype: SimpleITK.Image
     """
+
     transform_filter = sitk.TransformixImageFilter()
     if not verbose:
         transform_filter.LogToConsoleOff()
@@ -133,7 +136,6 @@ def generate_affine_transform(img, A, t, c):
         offset = [.5*x*y for x, y in zip(img.GetSize(), img.GetSpacing())]
         affine['CenterOfRotationPoint'] = f([x + y for x, y in zip(offset, img.GetOrigin())])
 
-
     transform = np.concatenate((A, t), axis=0)
 
     affine['TransformParameters'] = f(transform.ravel())
@@ -141,77 +143,65 @@ def generate_affine_transform(img, A, t, c):
 
 
 def _get_default_affine_transform():
-    return DEFAULT_AFFINE
-
-DEFAULT_AFFINE = {
-    "AutomaticParameterEstimation": ['true'],
-    "CheckNumberOfSamples": ['true'],
-    "DefaultPixelValue": ['0.000000'],
-    "FinalBSplineInterpolationOrder": ['3.000000'],
-    "FixedImagePyramid":
-        ['FixedSmoothingImagePyramid', 'FixedRecursiveImagePyramid'],#first one
-    "ImageSampler": ['RandomCoordinate'],
-    "Interpolator": ['BSplineInterpolator'],#Linear Interpolator
-    "MaximumNumberOfIterations": ['1024.000000'],#256
-    "MaximumNumberOfSamplingAttempts": ['8.000000'],
-    "Metric": ['AdvancedMattesMutualInformation'],
-    "MovingImagePyramid": ['MovingSmoothingImagePyramid'],
-    "NewSamplesEveryIteration": ['true'],
-    "NumberOfHistogramBins": ['32.000000'],#nonexistant
-    "NumberOfResolutions": ['4.000000'],
-    "NumberOfSamplesForExactGradient": ['4096.000000'],
-    "NumberOfSpatialSamples": ['2048.000000'],
-    "Optimizer": ['AdaptiveStochasticGradientDescent'],
-    "Registration": ['MultiResolutionRegistration'],
-    "ResampleInterpolator": ['FinalBSplineInterpolator'],
-    "Resampler": ['DefaultResampler'],
-    "ResultImageFormat": ['nii'],
-    "Transform": ['AffineTransform'],
-    "WriteIterationInfo": ['false'],
-    "WriteResultImage": ['true'],
-}
-
+    affine = {
+    'AutomaticScalesEstimation': ('True'),
+    'CenterOfRotationPoint': ('0.0', '0.0', '0.0'), 
+    'CompressResultImage': ('false',), 
+    'DefaultPixelValue': ('0.000000',), 
+    'FinalBSplineInterpolationOrder': ('3',),
+    'FixedInternalImagePixelType': ('float',), 
+    'Index': ('0', '0', '0'), 
+    'NumberOfParameters': ('12',),  
+    'ResampleInterpolator': ['FinalNearestNeighborInterpolator'], 
+    'Resampler': ('DefaultResampler',), 
+    'ResultImageFormat': ('nii',), 
+    'ResultImagePixelType': ('float',), 
+    'Transform': ('AffineTransform',),
+    'UseDirectionCosines': ('true',)
+    }
+    return affine
 
 
 def perform_transforms(filename):
-    with open(filename) as csv_file:
-        cvs_reader = csv.read(csv_file, delimiter=",")
-        for row in csv_reader:
-            filein = row[0]
-            fileout = row[1]
-            A = np.array([[float(row[2]), float(row[3]), float(row[4])],
-                        [float(row[5]), float(row[6]), float(row[7])],
-                        [float(row[8]), float(row[9]), float(row[10])]])
-            t = np.array([[float(row[11]), float(row[12]), float(row[13])]])
-            if row[14].lower() == "none":
-                c = None
-            elif row[14].lower() == "origin":
-                c = "origin"
-            else
-                c = np.array([[float(row[14]), float(row[15]), float(row[16])]])
-            if len(row) > 17:
-                ultrasound = bool(row[17])
-            else:
-                ultrasound = False
-            if len(row) > 18:
-                verbose = bool(row[18])
-            else:
-                verbose = False
-
-            run(filein, fileout, A, t, c, ultrasound, verbose)
+    workbook = xlrd.open_workbook(filename, on_demand=True)
+    worksheet = workbook.sheet_by_index(0)
+    if worksheet.cell(0,1).value == xlrd.empty_cell.value:
+        ultrasound = True
+    else:
+        ultrasound = bool(worksheet.cell(0,1).value)
+    if worksheet.cell(0,3).value == xlrd.empty_cell.value:
+        verbose = False
+    else:
+        verbose = bool(worksheet.cell(0, 3).value)
+    row = 2
+    while row < worksheet.nrows and worksheet.cell(row, 0).value != xlrd.empty_cell.value:
+        col = lambda c: worksheet.cell(row, c).value
+        filein = col(0)
+        fileout = col(1)
+        A = np.array([[float(col(2)), float(col(3)), float(col(4))],
+                    [float(col(5)), float(col(6)), float(col(7))],
+                    [float(col(8)), float(col(9)), float(col(10))]])
+        t = np.array([[float(col(11)), float(col(12)), float(col(13))]])
+        if col(14).lower() == "none":
+            c = None
+        elif col(15).lower() == "origin":
+            c = "origin"
+        else:
+            c = np.array([[float(col(14)), float(col(15)), float(col(16))]])
+        row += 1
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        filein = "SAMPLE FILE IN"
-        fileout = "SAMPLE FILE OUT"
-        A = np.array([[1, 0, 0],
+        filein = "SAMPLE FILE IN" #ORIGINAL FILENAME HERE
+        fileout = "SAMPLE FILE OUT" #NEW FILENAME HERE
+        A = np.array([[1, 0, 0], #AFFINE MATRIX HERE 
                     [0, 1, 0],
                     [0, 0, 1]])
 
-        t = np.array([[0, 0, 0]])
-        c = None
-        ultrasound = True
-        verbose = False
+        t = np.array([[0, 0, 0]]) #TRANSLATION VECTOR HERE
+        c = None # CENTER OF ROTATION HERE
+        ultrasound = True #MARK TRUE ONLY IF USING ULTRASOUND FILES
+        verbose = False #MARK TRUE FOR MORE TERMINAL OUTPUT
 
         run(filein, fileout, A, t, c, ultrasound, verbose)
     else:
