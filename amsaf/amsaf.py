@@ -532,9 +532,11 @@ def init_affine_transform(img, transform, center=None):
     affine['Spacing'] = f(img.GetSpacing())
     affine['Origin'] = f(img.GetOrigin())
     affine['Direction'] = f(img.GetDirection())
-    affine['CenterOfRotationPoint'] = affine['Origin']
+    
 
-    if center:
+    if center == "origin":
+        affine['CenterOfRotationPoint'] = affine['Origin']
+    elif center:
         affine['CenterOfRotationPoint'] = f(center)
     else:
         offset = [.5*x*y for x, y in zip(img.GetSize(), img.GetSpacing())]
