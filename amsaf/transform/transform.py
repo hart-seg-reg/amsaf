@@ -10,7 +10,7 @@ import xlrd
 
 
 
-def run(filein, fileout, A, t, c=None, origin=None, ultrasound=False, verbose=False, RAS=False):
+def run(filein, fileout, A, t, ultrasound=True, verbose=False, RAS=False):
     """
     Reads in filein, transforms the image based on pm, 
     and saves the file as fileout.
@@ -18,8 +18,6 @@ def run(filein, fileout, A, t, c=None, origin=None, ultrasound=False, verbose=Fa
     :param fileout: The output file path
     :param A: 3x3 numpy array consisting of a rotation matrix
     :param t: 1x3 numpy array consisting of the translational values
-    :param c: Center of rotation. If none given, geometric center is used.
-        If c=='origin', the origin is used
     :param ultrasound: Optional bool to be used if input image
         is an ultrasound or ultrasound slice
     :param verbose: Optional bool to control the amount of system logging
@@ -58,9 +56,11 @@ def ras2lps(pm, verbose=False):
 
 
 
-    f = lambda x: tuple([str(y) for y in x])
-    A_new = f(lps.ravel())
-    pm['TransformParameters'] = A_new + f(t)
+    A_new = tuple([str(y) for y in lps.ravel()])
+    t = tuple([str(y[0]) for y in t])
+    if verbose:
+        print("In LPS: " + str(A_new))
+    pm['TransformParameters'] = A_new + t
 
 
 def read_image(path, ultrasound=False):
@@ -134,7 +134,7 @@ def generate_affine_transform(img, A, t):
     affine['Size'] = f(img.GetSize())
     affine['Spacing'] = f(img.GetSpacing())
 
-        affine['Origin'] = f(img.GetOrigin())
+    affine['Origin'] = f(img.GetOrigin())
     affine['Direction'] = f(img.GetDirection())
 
     affine['CenterOfRotationPoint'] = f(np.array([0,0,0]))
