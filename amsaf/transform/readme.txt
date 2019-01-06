@@ -1,5 +1,5 @@
 Author: Chris Mitchell
-Last updated: 12/29/18
+Last updated: 1/5/19
 
 This is the readme for the SITK-based affine Transform package.
 
@@ -18,7 +18,7 @@ x' = A(x'-c) + t + c
 Notice that this indeed is still a transform, just with a new t' = t + c - Ac. 
 This also means that the rotation and stretching of the image will be the same regardless of c.
  "c" here functions as the center of rotation by translating both the initial point and 
- the final point by the same amount.
+ the final point by the same amount. For simplicity, this code assumes c = 0.
 
 How to run transforms:
 	There are two options to running transforms:
@@ -32,19 +32,20 @@ Parameters:
 
 Ultrasound:
 	Boolean. If True, a necessary float casting will take place when any images are read in.
+	Default is True
 
 Verbose:
-	Boolean. For verbose outputs
+	Boolean. For verbose outputs. Default is False
 
 RAS:
 	Boolean. SITK uses LPS coordinates. However, some programs, to include Slicer, use RAS.
-	If True, converts the transformation matrix into LPS coordinates
+	If True, converts the transformation matrix into LPS coordinates. Default is False
 
 FileIn:
-	Img file to be read in
+	Image file to be read in
 
 FileOut:
-	Img file to be read out
+	Image file to be read out
 
 A11 to A33:
 	For the A matrix, A = [[A11, A12, A13],
@@ -53,17 +54,23 @@ A11 to A33:
 Tx, Ty, Tz:
 	The translational vector t = [Tx, Ty, Tz]^T
 
-Cx, Cy, Cz;
-	The center of rotation vector c = [Cx, Cy, Cz]^T
-	If Cx == "origin", the origin is used. the origin is used
-	If Cx == "none" or is blank, the center of the image is used
-	Note that origin is not default (0, 0, 0)
-
-Ox, Oy, Oz:
-	The origin of the image
-	This parameter is only needed if the origin was shifted at all when finding the transform,
-		eg. if the "Center Volume" function was used in Slicer
-	If Ox == "none" or is blank, the default origin (which is Slicer's default origin) is used
-	Note that origin is not default (0, 0, 0)
-
 Using Slicer to align images:
+
+First off, DO NOT MODIFY ANY IMAGE PROPERTIES. This code makes assumptions on origin position, 
+	directions, and spacing in order to simplify computation. This also means you shouldn't use
+	the "Center Volume" button.
+
+Load two images (or the entire folder if you want) into Slicer by clicking the "Data" folder
+button on the top left and following the prompts. Next to the red header of the "right" image,
+click the button that looks like a pin, and then click the down arrow to cause the menu to drop down.
+Click the button which looks like two interlocked circles (so this way what you do applys to all views).
+Then use the drop down menus to select which images you want to use, and either the slider or the 
+box to the left of the image to control transparency.
+
+From here, go to the transforms menu. Under "Active Transform," click "Create new LinearTransform." 
+I'd recommend renaming the transform by clicking "Rename Current Node" in the same drop-down 
+menu while having the desired transform selected.
+
+Under this same "Transforms" menu, under "Apply Transforms," select which image(s) you wish to apply
+a transform to (AKA the moving image) and click the right pointing arrow. Use the sliders above under
+"Edit Transform" to translate and rotate images until they are aligned.
